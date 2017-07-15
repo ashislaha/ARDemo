@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13156.6" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ydE-qM-X29">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13137.5"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Map View Controller-->
+        <scene sceneID="M8l-L7-m5P">
+            <objects>
+                <viewController id="Khz-Y8-HVS" customClass="MapViewController" customModule="ARDemo" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="Xiu-iE-0xD"/>
+                        <viewControllerLayoutGuide type="bottom" id="3fR-sV-tNx"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="YES" id="BMd-Sc-5x2">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="h8M-Sc-3ej">
+                        <barButtonItem key="rightBarButtonItem" title="ARView" id="Sh2-x8-5iB">
+                            <connections>
+                                <action selector="openARView:" destination="Khz-Y8-HVS" id="gdr-o5-iip"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="pkV-FV-yDt" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-327.19999999999999" y="136.28185907046478"/>
+        </scene>
+        <!--ARViewController-->
+        <scene sceneID="tXr-a1-R10">
+            <objects>
+                <viewController id="BV1-FR-VrT" userLabel="ARViewController" customClass="ARViewController" customModule="ARDemo" customModuleProvider="target" sceneMemberID="viewController">
+                    <arscnView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="6iT-du-M5M">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    </arscnView>
+                    <navigationItem key="navigationItem" id="SmF-Rq-nJH">
+                        <barButtonItem key="rightBarButtonItem" title="Dismiss" id="sJ8-wj-kqj">
+                            <connections>
+                                <action selector="dismiss:" destination="BV1-FR-VrT" id="tDD-sm-oQ9"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="sceneView" destination="6iT-du-M5M" id="5bg-AS-DMc"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SZV-WD-TEh" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1143" y="134"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="IVh-b3-ooa">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="ydE-qM-X29" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="Cyg-mc-MyF">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="Khz-Y8-HVS" kind="relationship" relationship="rootViewController" id="xyu-Qf-t2q"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="hyO-bI-QyR" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1172" y="135"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="XkN-1P-hiZ">
+            <objects>
+                <navigationController storyboardIdentifier="ARViewController" automaticallyAdjustsScrollViewInsets="NO" id="i9l-qK-LiR" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="HCg-20-1MS">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="BV1-FR-VrT" kind="relationship" relationship="rootViewController" id="ZZe-a3-QYF"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="2iv-f6-iNR" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="374.39999999999998" y="134.93253373313345"/>
+        </scene>
+    </scenes>
+</document>
