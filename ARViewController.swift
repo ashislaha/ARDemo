@@ -71,7 +71,7 @@ class ARViewController: UIViewController {
             for eachSection in worldSectionsPositions {
                 for eachCoordinate in eachSection {
                     let position = SCNVector3Make(eachCoordinate.0, eachCoordinate.1, eachCoordinate.2)
-                    scene.rootNode.addChildNode(SceneNodeCreator.createCapsuleNode(position:position,text: "\(nodeNumber)"))
+                    scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position:position, text: "\(nodeNumber)"))
                     nodeNumber = nodeNumber + 1
                 }
             }
@@ -184,8 +184,8 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
     // ADD
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         print("Plane Detected : New Node is added")
-        //let node = SceneNodeCreator.createPyramidNode(position: SCNVector3Make(0, 0, 0))
-        return SCNNode() // node
+        let node = SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(0, 0, 0),text: "Hello")
+        return node // SCNNode() 
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {

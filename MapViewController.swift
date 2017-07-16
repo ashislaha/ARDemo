@@ -42,8 +42,8 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         
         mapSetUp(location: myLocation)
         
-        createMarker(location: myLocation, mapView: mapView, markerTitle: "Bangalore", snippet: "India")
-        createMarker(location: cabLocation, mapView: mapView, markerTitle: "Cab Location", snippet: "Waiting")
+        createMarker(location: myLocation, mapView: mapView, markerTitle: "My Location", snippet: "")
+        createMarker(location: cabLocation, mapView: mapView, markerTitle: "Cab Location", snippet: "Waiting...")
         drawPath(map: mapView, pathArray: cherryHillPath)
     }
     

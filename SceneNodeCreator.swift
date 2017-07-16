@@ -8,51 +8,35 @@
 import Foundation
 import SceneKit
 
+enum GeometryNode {
+    case Box
+    case Pyramid
+    case Capsule
+    case Cone
+    case Cylinder
+}
+
 class SceneNodeCreator {
     
-    class func sceneSetUp() -> SCNScene {
-        let scene = SCNScene() //SCNScene(named: "art.scnassets/ship.scn")!
-        scene.rootNode.addChildNode(SceneNodeCreator.createBoxNode(position: SCNVector3Make(0, 0, -1)))
-        scene.rootNode.addChildNode(SceneNodeCreator.createPyramidNode(position: SCNVector3Make(1, 0, -1)))
-        scene.rootNode.addChildNode(SceneNodeCreator.createCapsuleNode(position: SCNVector3Make(-1, 0, -1)))
-        scene.rootNode.addChildNode(SceneNodeCreator.createCameraNode(position: SCNVector3Make(0, 0, 20)))
-        return scene
-    }
-    
-    // box node
-    class func createBoxNode(position : SCNVector3) -> SCNNode {
-        let box = SCNBox(width: 0.5, height: 0.5, length: 0.5, chamferRadius: 0.2)
-        box.firstMaterial?.diffuse.contents = UIColor.getRandomColor()
-        box.firstMaterial?.specular.contents = UIColor.getRandomColor()
-        
-        let node = SCNNode(geometry: box)
-        node.position = position
-        node.physicsBody = SCNPhysicsBody(type: .kinematic, shape: nil)
-        return node
-    }
-    
-    // pyramid node
-    class func createPyramidNode(position : SCNVector3) -> SCNNode {
-        let pyramid = SCNPyramid(width: 0.5, height: 0.5, length: 0.5)
-        pyramid.firstMaterial?.diffuse.contents = UIColor.getRandomColor()
-        pyramid.firstMaterial?.specular.contents = UIColor.getRandomColor()
-        let pyramidNode = SCNNode(geometry: pyramid)
-        pyramidNode.position = position
-        return pyramidNode
-    }
-    
-    // Capsule node
-    class func createCapsuleNode(position : SCNVector3, text : String? = nil) -> SCNNode {
-        let cirle = SCNCapsule(capRadius: 0.5, height: 0.5)
-        if let txt = text, let img = imageWithText(text:txt, imageSize: CGSize(width: 1024, height: 1024), backgroundColor: UIColor.getRandomColor()) {
-            cirle.firstMaterial?.diffuse.contents = img
-        } else {
-            cirle.firstMaterial?.diffuse.contents = UIColor.getRandomColor()
+    class func getGeometryNode(type : GeometryNode, position : SCNVector3, text : String? = nil) -> SCNNode {
+        var geometry : SCNGeometry!
+        switch type {
+        case .Box:          geometry = SCNBox(width: 0.5, height: 0.5, length: 0.5, chamferRadius: 0.2)
+        case .Pyramid:      geometry = SCNPyramid(width: 0.5, height: 0.5, length: 0.5)
+        case .Capsule:      geometry = SCNCapsule(capRadius: 0.5, height: 0.5)
+        case .Cone:         geometry = SCNCone(topRadius: 0.0, bottomRadius: 0.3, height: 0.5)
+        case .Cylinder:     geometry = SCNCylinder(radius: 0.5, height: 0.5)
         }
-        cirle.firstMaterial?.specular.contents = UIColor.getRandomColor()
-        let capsuleNode = SCNNode(geometry: cirle)
-        capsuleNode.position = position
-        return capsuleNode
+        
+        if let txt = text, let img = imageWithText(text:txt, imageSize: CGSize(width: 1024, height: 1024), backgroundColor: UIColor.getRandomColor()) {
+            geometry.firstMaterial?.diffuse.contents = img
+        } else {
+            geometry.firstMaterial?.diffuse.contents = UIColor.getRandomColor()
+        }
+        geometry.firstMaterial?.specular.contents = UIColor.getRandomColor()
+        let node = SCNNode(geometry: geometry)
+        node.position = position
+        return node
     }
     
     // Camera node
@@ -71,18 +55,6 @@ class SceneNodeCreator {
         omniLightNode.light?.color = UIColor.white.withAlphaComponent(0.5)
         omniLightNode.position = position
         return omniLightNode
-    }
-    
-    
-    // Get Random Node
-    class func getGeometry(position : SCNVector3) -> SCNNode {
-        let random = Int(arc4random_uniform(3))
-        switch random {
-        case 0: return createBoxNode(position: position)
-        case 1: return createPyramidNode(position: position)
-        case 2: return createCapsuleNode(position: position)
-        default: return createBoxNode(position: position)
-        }
     }
     
     // Image with Text
@@ -117,6 +89,16 @@ class SceneNodeCreator {
             return image
         }
         return nil
+    }
+    
+    // Temporary SceneSetup
+    class func sceneSetUp() -> SCNScene {
+        let scene = SCNScene() //SCNScene(named: "art.scnassets/ship.scn")!
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Box, position: SCNVector3Make(0, 0, -1)))
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(1, 0, -1)))
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position: SCNVector3Make(-1, 0, -1)))
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1)))
+        return scene
     }
 }
 
