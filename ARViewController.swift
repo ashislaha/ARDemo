@@ -26,7 +26,6 @@ class ARViewController: UIViewController {
     private var worldSectionsPositions : [[(Float,Float,Float)]]? // (0,0,0) is the center of Co-ordinates
     private var carCoordinate = SCNVector3Zero
     
-    private var isObjectAddedPerPlane : Bool = false
     private var overlayView : UIView!
     private let worldTrackingFactor : Float = 100000
     private var nodeNumber : Int = 1
@@ -46,6 +45,7 @@ class ARViewController: UIViewController {
 
         let configuration = ARWorldTrackingSessionConfiguration()
         configuration.planeDetection = .horizontal // Plane Detection
+        configuration.isLightEstimationEnabled = true // light estimation
         sceneView.session.run(configuration)
     }
     
@@ -65,7 +65,6 @@ class ARViewController: UIViewController {
     //MARK:- Dismiss
     
     @IBAction func dismiss(_ sender: UIBarButtonItem) {
-        isObjectAddedPerPlane = false
         self.dismiss(animated: true, completion: nil)
     }
     
@@ -153,26 +152,20 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
     //MARK:- ARSessionDelegate
     
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-       // addAnchorPoint(frame: frame)
     }
     
-    //MARK:- Hit-Test (Scene Understanding)
-    
-    func addAnchorPoint(frame : ARFrame) {
-        let point = CGPoint(x: 0.5, y: 0.5)
-        let results = frame.hitTest(point, types: [.existingPlane, .estimatedHorizontalPlane])
-        if let closetPoint = results.first , !isObjectAddedPerPlane {
-            let anchor = ARAnchor(transform: closetPoint.worldTransform)
-            isObjectAddedPerPlane = true
-            sceneView.session.add(anchor: anchor)
-        }
-    }
-    
-    // Tracking
+    // Tracking - Called when a new plane was detected
     func session(_ session: ARSession, didAdd anchors: [ARAnchor]) {
         addPlaneGeometry(for: anchors)
     }
     func addPlaneGeometry(for anchors : [ARAnchor]) {
+    }
+    
+    // Called when a plane’s transform or extent is updated
+    func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
+        updatePlaneGeometry(forAnchors: anchors)
+    }
+    func updatePlaneGeometry(forAnchors: [ARAnchor]) {
     }
     
     // When a plane is removed
@@ -182,28 +175,13 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
     func removePlaneGeometry(for anchors : [ARAnchor]) {
     }
     
-    // While Tracking State changes ( Not-running -> Normal <-> Limited )
-    
-    func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
-        switch camera.trackingState {
-        case .limited(let reason) :
-            if reason == .excessiveMotion {
-                showAlert(header: "Tracking State Failure", message: "Excessive Motion")
-            } else if reason == .insufficientFeatures {
-                showAlert(header: "Tracking State Failure", message: "Insufficient Features")
-            }
-            isObjectAddedPerPlane = false
-        case .normal, .notAvailable : break
-        }
-    }
-    
     //MARK:- ARSCNViewDelegate  (Rendering)
     
     // ADD
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         print("Plane Detected : New Node is added")
         //let node = SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(0, 0, 0),text: "Hello")
-        return SCNNode()
+        return SCNNode() //node
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -217,6 +195,31 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
     
     // REMOVE
     func renderer(_ renderer: SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
+    }
+    
+    // While Tracking State changes ( Not-running -> Normal <-> Limited ) ARSessionDelegate
+    
+    func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
+        switch camera.trackingState {
+        case .limited(let reason) :
+            if reason == .excessiveMotion {
+                showAlert(header: "Tracking State Failure", message: "Excessive Motion")
+            } else if reason == .insufficientFeatures {
+                showAlert(header: "Tracking State Failure", message: "Insufficient Features")
+            }
+        case .normal, .notAvailable : break
+        }
+    }
+    
+    //MARK:- Hit-Test (Scene Understanding)
+    
+    func addAnchorPoint(frame : ARFrame) {
+        let point = CGPoint(x: 0.5, y: 0.5)
+        let results = frame.hitTest(point, types: [.existingPlane, .estimatedHorizontalPlane])
+        if let closetPoint = results.first {
+            let anchor = ARAnchor(transform: closetPoint.worldTransform)
+            sceneView.session.add(anchor: anchor)
+        }
     }
 }
 
