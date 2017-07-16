@@ -48,7 +48,10 @@ class ARViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        createScene()
+       
+        sceneView.scene = getScene() // SceneNodeCreator.sceneSetUp()
+        sceneView.autoenablesDefaultLighting = true
+        sceneView.allowsCameraControl = false
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -65,9 +68,9 @@ class ARViewController: UIViewController {
     
     // MARK:- Scene Set up
     
-    private func createScene() {
+    private func getScene() -> SCNScene {
+        let scene = SCNScene()
         if let worldSectionsPositions = worldSectionsPositions {
-            let scene = SCNScene()
             for eachSection in worldSectionsPositions {
                 for eachCoordinate in eachSection {
                     let position = SCNVector3Make(eachCoordinate.0, eachCoordinate.1, eachCoordinate.2)
@@ -76,10 +79,8 @@ class ARViewController: UIViewController {
                 }
             }
             //scene.rootNode.addChildNode(SceneNodeCreator.createCameraNode(position: SCNVector3Make(0, 0, 20))) // optional
-            sceneView.scene = scene
-            sceneView.autoenablesDefaultLighting = true
-            sceneView.allowsCameraControl = false
         }
+        return scene
     }
     
     //MARK:- Coordinate Mapper
@@ -184,8 +185,8 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
     // ADD
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         print("Plane Detected : New Node is added")
-        let node = SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(0, 0, 0),text: "Hello")
-        return node // SCNNode() 
+        //let node = SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(0, 0, 0),text: "Hello")
+        return SCNNode()
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {

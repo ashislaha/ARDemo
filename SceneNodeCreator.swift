@@ -57,6 +57,14 @@ class SceneNodeCreator {
         return omniLightNode
     }
     
+    // plane node
+    class func createPlane(position : SCNVector3) -> SCNNode {
+        let scene = SCNScene(named: "art.scnassets/ship.scn")!
+        let shipNode = scene.rootNode.childNodes.first ?? SCNNode()
+        shipNode.position = position
+        return shipNode
+    }
+    
     // Image with Text
     class func imageWithText(text:String, fontSize:CGFloat = 150, fontColor: UIColor = .black, imageSize:CGSize, backgroundColor:UIColor) -> UIImage? {
         let imageRect = CGRect(origin: CGPoint.zero, size: imageSize)
@@ -93,11 +101,12 @@ class SceneNodeCreator {
     
     // Temporary SceneSetup
     class func sceneSetUp() -> SCNScene {
-        let scene = SCNScene() //SCNScene(named: "art.scnassets/ship.scn")!
+        let scene = SCNScene()
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Box, position: SCNVector3Make(0, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position: SCNVector3Make(-1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1)))
+        scene.rootNode.addChildNode(SceneNodeCreator.createPlane(position: SCNVector3Make(-2, 0, -1)))
         return scene
     }
 }
