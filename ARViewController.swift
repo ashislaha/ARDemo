@@ -21,12 +21,15 @@ class ARViewController: UIViewController {
     @IBOutlet var sceneView: ARSCNView!
     
     var sectionCoordinates : [[(Double,Double)]]?
-    var worldSectionsPositions : [[(Float,Float,Float)]]? // (0,0,0) is the center of Co-ordinates
+    var carLocation : (Double,Double)?
     
-    var isObjectAddedPerPlane : Bool = false
-    var overlayView : UIView!
-    let worldTrackingFactor : Float = 100000
-    var nodeNumber : Int = 1
+    private var worldSectionsPositions : [[(Float,Float,Float)]]? // (0,0,0) is the center of Co-ordinates
+    private var carCoordinate = SCNVector3Zero
+    
+    private var isObjectAddedPerPlane : Bool = false
+    private var overlayView : UIView!
+    private let worldTrackingFactor : Float = 100000
+    private var nodeNumber : Int = 1
     
     //MARK:- View Controller Lifecycle
     
@@ -78,6 +81,16 @@ class ARViewController: UIViewController {
                     nodeNumber = nodeNumber + 1
                 }
             }
+            
+            // add car location
+            if let carLocation = carLocation, let sectionCoordinates = sectionCoordinates , let firstSection = sectionCoordinates.first, firstSection.count > 0 {
+                if let referencePoint = firstSection.first {
+                    let carRealCoordinate = calculateRealCoordinate(mapCoordinate: carLocation, referencePoint: referencePoint)
+                    let position = SCNVector3Make(carRealCoordinate.0, carRealCoordinate.1, carRealCoordinate.2)
+                    scene.rootNode.addChildNode(SceneNodeCreator.createPlane(position: position))
+                }
+            }
+            
             //scene.rootNode.addChildNode(SceneNodeCreator.createCameraNode(position: SCNVector3Make(0, 0, 20))) // optional
         }
         return scene
@@ -97,16 +110,20 @@ class ARViewController: UIViewController {
         for eachSection in sectionCoordinates { // Each Edge
             var worldTrackSection = [(Float,Float,Float)]()
             for eachCoordinate in eachSection { // Each Point
-                var realCoordinate : (x:Float, y: Float, z:Float) = (Float(),Float(),Float())
-                let lndDelta = Float(eachCoordinate.1 - referencePoint.1) * worldTrackingFactor
-                let latDelta = Float(eachCoordinate.0 - referencePoint.0) * worldTrackingFactor
-                realCoordinate.x = lndDelta // based on Longtitude
-                realCoordinate.y = 0.0
-                realCoordinate.z = -1.0 * sqrt(latDelta * latDelta + lndDelta * lndDelta) // -ve Z axis
-                worldTrackSection.append(realCoordinate)
+                worldTrackSection.append(calculateRealCoordinate(mapCoordinate: eachCoordinate,referencePoint: referencePoint))
             }
             worldSectionsPositions?.append(worldTrackSection)
         }
+    }
+    
+    private func calculateRealCoordinate(mapCoordinate: (Double, Double), referencePoint: (Double, Double)) -> (Float,Float,Float) {
+        var realCoordinate : (x:Float, y: Float, z:Float) = (Float(),Float(),Float())
+        let lndDelta = Float(mapCoordinate.1 - referencePoint.1) * worldTrackingFactor
+        let latDelta = Float(mapCoordinate.0 - referencePoint.0) * worldTrackingFactor
+        realCoordinate.x = lndDelta // based on Longtitude
+        realCoordinate.y = 0.0 // should be calculated based on altitude
+        realCoordinate.z = -1.0 * sqrt(latDelta * latDelta + lndDelta * lndDelta) // -ve Z axis
+        return realCoordinate
     }
     
     //MARK:- Touch Handling

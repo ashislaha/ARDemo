@@ -29,8 +29,9 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     let cherryHillPath = [(12.950268, 77.641723), (12.950439, 77.641744), (12.950376, 77.642187)]
     let cherryHillsSectionCoordinates = [
              [(12.950268, 77.641723), (12.950299, 77.641718),(12.950325, 77.641718), (12.950351, 77.641720),(12.950385, 77.641731), (12.950408, 77.641742),(12.950439, 77.641744)],
-             [(12.950441, 77.641796),(12.950427, 77.641839), (12.950419, 77.641892), (12.950414, 77.641951), (12.950401, 77.642013), (12.950388, 77.642072), (12.950375, 77.642144), (12.950376, 77.642187)]
+             [(12.950441, 77.641796),(12.950427, 77.641839), (12.950419, 77.641892), (12.950414, 77.641951), (12.950401, 77.642013), (12.950388, 77.642072), (12.950375, 77.642144)]
          ]
+    let carLocation = (12.950376, 77.642187)
     
     private var mapView : GMSMapView!
     
@@ -52,6 +53,7 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         if let arVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ARViewController") as? UINavigationController {
             if let vc = arVC.visibleViewController as? ARViewController {
                 vc.sectionCoordinates = cherryHillsSectionCoordinates
+                vc.carLocation = carLocation
             }
             self.present(arVC, animated: true, completion: nil)
         }
