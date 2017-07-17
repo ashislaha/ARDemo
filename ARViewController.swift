@@ -27,7 +27,7 @@ class ARViewController: UIViewController {
     private var carCoordinate = SCNVector3Zero
     
     private var overlayView : UIView!
-    private let worldTrackingFactor : Float = 100000
+    private let worldTrackingFactor : Float = 50000
     private var nodeNumber : Int = 1
     
     //MARK:- View Controller Lifecycle
@@ -52,7 +52,7 @@ class ARViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
        
-        sceneView.scene = getScene() // SceneNodeCreator.sceneSetUp()
+        sceneView.scene = getScene() //SceneNodeCreator.sceneSetUp()
         sceneView.autoenablesDefaultLighting = true
         sceneView.allowsCameraControl = false
     }
@@ -86,11 +86,11 @@ class ARViewController: UIViewController {
                 if let referencePoint = firstSection.first {
                     let carRealCoordinate = calculateRealCoordinate(mapCoordinate: carLocation, referencePoint: referencePoint)
                     let position = SCNVector3Make(carRealCoordinate.0, carRealCoordinate.1, carRealCoordinate.2)
-                    scene.rootNode.addChildNode(SceneNodeCreator.createPlane(position: position))
+                    let planeNode = SceneNodeCreator.createPlane(position: position)
+                    planeNode.scale = SCNVector3Make(10, 10, 10)
+                    scene.rootNode.addChildNode(planeNode)
                 }
             }
-            
-            //scene.rootNode.addChildNode(SceneNodeCreator.createCameraNode(position: SCNVector3Make(0, 0, 20))) // optional
         }
         return scene
     }
@@ -117,11 +117,11 @@ class ARViewController: UIViewController {
     
     private func calculateRealCoordinate(mapCoordinate: (Double, Double), referencePoint: (Double, Double)) -> (Float,Float,Float) {
         var realCoordinate : (x:Float, y: Float, z:Float) = (Float(),Float(),Float())
-        let lndDelta = Float(mapCoordinate.1 - referencePoint.1) * worldTrackingFactor
+        let lngDelta = Float(mapCoordinate.1 - referencePoint.1) * worldTrackingFactor
         let latDelta = Float(mapCoordinate.0 - referencePoint.0) * worldTrackingFactor
-        realCoordinate.x = lndDelta // based on Longtitude
+        realCoordinate.x = lngDelta // based on Longtitude
         realCoordinate.y = 0.0 // should be calculated based on altitude
-        realCoordinate.z = -1.0 * sqrt(latDelta * latDelta + lndDelta * lndDelta) // -ve Z axis
+        realCoordinate.z = -1.0 * sqrt(latDelta * latDelta + lngDelta * lngDelta) // -ve Z axis
         return realCoordinate
     }
     

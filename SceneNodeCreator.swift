@@ -18,7 +18,7 @@ enum GeometryNode {
 
 class SceneNodeCreator {
     
-    class func getGeometryNode(type : GeometryNode, position : SCNVector3, text : String? = nil) -> SCNNode {
+    class func getGeometryNode(type : GeometryNode, position : SCNVector3, text : String? = nil, imageName : String? = nil) -> SCNNode {
         var geometry : SCNGeometry!
         switch type {
         case .Box:          geometry = SCNBox(width: 0.5, height: 0.5, length: 0.5, chamferRadius: 0.2)
@@ -28,7 +28,9 @@ class SceneNodeCreator {
         case .Cylinder:     geometry = SCNCylinder(radius: 0.5, height: 0.5)
         }
         
-        if let txt = text, let img = imageWithText(text:txt, imageSize: CGSize(width: 1024, height: 1024), backgroundColor: UIColor.getRandomColor()) {
+        if let imgName = imageName , let image =  UIImage(named: imgName) {
+             geometry.firstMaterial?.diffuse.contents = image
+        } else if let txt = text, let img = imageWithText(text:txt, imageSize: CGSize(width: 1024, height: 1024), backgroundColor: UIColor.getRandomColor()) {
             geometry.firstMaterial?.diffuse.contents = img
         } else {
             geometry.firstMaterial?.diffuse.contents = UIColor.getRandomColor()
@@ -60,6 +62,14 @@ class SceneNodeCreator {
     // plane node
     class func createPlane(position : SCNVector3) -> SCNNode {
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
+        let shipNode = scene.rootNode.childNodes.first ?? SCNNode()
+        shipNode.position = position
+        return shipNode
+    }
+    
+    // create car
+    class func createCar(position : SCNVector3) -> SCNNode {
+        let scene = SCNScene(named: "art.scnassets/car.scn")!
         let shipNode = scene.rootNode.childNodes.first ?? SCNNode()
         shipNode.position = position
         return shipNode
@@ -102,11 +112,12 @@ class SceneNodeCreator {
     // Temporary SceneSetup
     class func sceneSetUp() -> SCNScene {
         let scene = SCNScene()
-        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Box, position: SCNVector3Make(0, 0, -1)))
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Box, position: SCNVector3Make(-2, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position: SCNVector3Make(-1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1)))
-        scene.rootNode.addChildNode(SceneNodeCreator.createPlane(position: SCNVector3Make(-2, 0, -1)))
+        scene.rootNode.addChildNode(SceneNodeCreator.createPlane(position: SCNVector3Make(0, 0, -1)))
+        //scene.rootNode.addChildNode(SceneNodeCreator.createCar(position: SCNVector3Make(0, 0, -1)))
         return scene
     }
 }
