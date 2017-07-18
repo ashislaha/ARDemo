@@ -29,6 +29,7 @@ class ARViewController: UIViewController {
     private var overlayView : UIView!
     private let worldTrackingFactor : Float = 50000
     private var nodeNumber : Int = 1
+    fileprivate var tappedNode : SCNNode?
     
     //MARK:- View Controller Lifecycle
     
@@ -52,7 +53,7 @@ class ARViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
        
-        sceneView.scene = getScene() //SceneNodeCreator.sceneSetUp()
+        sceneView.scene = SceneNodeCreator.sceneSetUp() // getScene() //
         sceneView.autoenablesDefaultLighting = true
         sceneView.allowsCameraControl = false
     }
@@ -137,11 +138,22 @@ class ARViewController: UIViewController {
     }
     private func handleTouchEvent(node : SCNNode ) {
         let basicAnimation = CABasicAnimation(keyPath: "opacity")
+        basicAnimation.delegate = self
         basicAnimation.duration = 1.0
         basicAnimation.fromValue = 1.0
         basicAnimation.toValue = 0.0
         node.addAnimation(basicAnimation, forKey: "opacity")
-        //node.geometry?.firstMaterial?.emission.contents = UIColor.green
+        tappedNode = node
+    }
+}
+
+extension ARViewController : CAAnimationDelegate {
+    func animationDidStart(_ anim: CAAnimation) {
+    }
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        if let node = tappedNode {
+            node.geometry?.firstMaterial?.diffuse.contents = UIColor.getRandomColor()
+        }
     }
 }
 
@@ -180,8 +192,8 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
     // ADD
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         print("Plane Detected : New Node is added")
-        //let node = SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(0, 0, 0),text: "Hello")
-        return SCNNode() //node
+        let node = SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(0, 0, 0),text: "Hello")
+        return node //  SCNNode() //
     }
     
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
