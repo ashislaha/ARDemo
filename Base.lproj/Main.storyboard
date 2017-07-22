@@ -4,7 +4,6 @@
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13137.5"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -23,6 +22,11 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="h8M-Sc-3ej">
+                        <barButtonItem key="leftBarButtonItem" title="mappingFactor" id="5Jg-I2-x8x">
+                            <connections>
+                                <action selector="mappingFacorAction:" destination="Khz-Y8-HVS" id="JZL-N2-rCu"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="ARView" id="Sh2-x8-5iB">
                             <connections>
                                 <action selector="openARView:" destination="Khz-Y8-HVS" id="gdr-o5-iip"/>

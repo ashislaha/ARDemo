@@ -16,6 +16,13 @@ enum GeometryNode {
     case Cylinder
 }
 
+enum ArrowDirection {
+    case towards
+    case backwards
+    case left
+    case right
+}
+
 class SceneNodeCreator {
     
     class func getGeometryNode(type : GeometryNode, position : SCNVector3, text : String? = nil, imageName : String? = nil) -> SCNNode {
@@ -25,7 +32,7 @@ class SceneNodeCreator {
         case .Pyramid:      geometry = SCNPyramid(width: 0.5, height: 0.5, length: 0.5)
         case .Capsule:      geometry = SCNCapsule(capRadius: 0.5, height: 0.5)
         case .Cone:         geometry = SCNCone(topRadius: 0.0, bottomRadius: 0.3, height: 0.5)
-        case .Cylinder:     geometry = SCNCylinder(radius: 0.5, height: 0.5)
+        case .Cylinder:     geometry = SCNCylinder(radius: 0.1, height: 0.5)
         }
         
         if let imgName = imageName , let image =  UIImage(named: imgName) {
@@ -39,6 +46,44 @@ class SceneNodeCreator {
         let node = SCNNode(geometry: geometry)
         node.position = position
         return node
+    }
+    
+    // arrow node
+    class func getArrow(position : SCNVector3 , direction : ArrowDirection ) -> SCNNode {
+        let color = UIColor.getRandomColor()
+        let cylinder = SCNCylinder(radius: 0.1, height: 0.6)
+        cylinder.firstMaterial?.diffuse.contents = color
+        let cylinderNode = SCNNode(geometry: cylinder)
+        
+        let pyramid = SCNPyramid(width: 0.5, height: 0.5, length: 0.5)
+        pyramid.firstMaterial?.diffuse.contents = color
+        let pyramidNode = SCNNode(geometry: pyramid)
+        pyramidNode.position = position
+        pyramidNode.addChildNode(cylinderNode)
+        
+        let rotation = CABasicAnimation(keyPath: "rotation")
+        switch direction {
+            case .left:
+                rotation.fromValue = SCNVector4Make(0, 0, 1, 0)
+                rotation.toValue = SCNVector4Make(0, 0, 1, Float(Double.pi / 2 )) // Anti-clockwise 90 degree around z-axis
+                pyramidNode.rotation = SCNVector4Make(0, 0, 1, Float(Double.pi / 2 ))
+            case .right:
+                rotation.fromValue = SCNVector4Make(0, 0, 1, 0)
+                rotation.toValue = SCNVector4Make(0, 0, 1, -Float(Double.pi / 2 )) // clockwise 90 degree around z-axis
+                pyramidNode.rotation = SCNVector4Make(0, 0, 1, -Float(Double.pi / 2 ))
+            case .towards:
+                rotation.fromValue = SCNVector4Make(1, 0, 0, 0)
+                rotation.toValue = SCNVector4Make(1, 0, 0, -Float(Double.pi / 2 ))  // clockwise 90 degree around x-axis
+                pyramidNode.rotation = SCNVector4Make(1, 0, 0, -Float(Double.pi / 2 ))
+            case .backwards:
+                rotation.fromValue = SCNVector4Make(1, 0, 0, 0)
+                rotation.toValue = SCNVector4Make(1, 0, 0, Float(Double.pi / 2 )) // anti-clockwise 90 degree around x-axis
+                pyramidNode.rotation = SCNVector4Make(1, 0, 0, Float(Double.pi / 2 ))
+        }
+        rotation.duration = 2.0
+        pyramidNode.addAnimation(rotation, forKey: "Rotate it")
+        
+        return pyramidNode
     }
     
     // Camera node
@@ -59,20 +104,14 @@ class SceneNodeCreator {
         return omniLightNode
     }
     
-    // plane node
-    class func createPlane(position : SCNVector3) -> SCNNode {
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
-        let shipNode = scene.rootNode.childNodes.first ?? SCNNode()
-        shipNode.position = position
-        return shipNode
-    }
-    
-    // create car
-    class func createCar(position : SCNVector3) -> SCNNode {
-        let scene = SCNScene(named: "art.scnassets/car.scn")!
-        let shipNode = scene.rootNode.childNodes.first ?? SCNNode()
-        shipNode.position = position
-        return shipNode
+    // Scene node
+    class func createSceneNode(sceneName : String , position : SCNVector3) -> SCNNode {
+        if let scene = SCNScene(named:sceneName) {
+            let sceneNode = scene.rootNode.childNodes.first ?? SCNNode()
+            sceneNode.position = position
+            return sceneNode
+        }
+        return SCNNode()
     }
     
     // Image with Text
@@ -112,12 +151,12 @@ class SceneNodeCreator {
     // Temporary SceneSetup
     class func sceneSetUp() -> SCNScene {
         let scene = SCNScene()
-        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Box, position: SCNVector3Make(-2, 0, -1)))
-        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(1, 0, -1)))
-        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position: SCNVector3Make(-1, 0, -1)))
-        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1)))
-        scene.rootNode.addChildNode(SceneNodeCreator.createPlane(position: SCNVector3Make(0, 0, -1)))
-        //scene.rootNode.addChildNode(SceneNodeCreator.createCar(position: SCNVector3Make(0, 0, -1)))
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Box, position: SCNVector3Make(-2, 0, -1), text: "Hi"))
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position: SCNVector3Make(-1, 0, -1), text: "Hi" ))
+        scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: SCNVector3Make(0, 0, -1), direction: .right))
+        scene.rootNode.addChildNode(SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  SCNVector3Make(1, 0, -1)))
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1),text: "Hi"))
+        scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(3, 0, -1),text: "Hi"))
         return scene
     }
 }
