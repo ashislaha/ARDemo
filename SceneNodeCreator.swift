@@ -148,12 +148,12 @@ class SceneNodeCreator {
         return nil
     }
     
-    // Temporary SceneSetup
+    // Temporary Scene Graph
     class func sceneSetUp() -> SCNScene {
         let scene = SCNScene()
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Box, position: SCNVector3Make(-2, 0, -1), text: "Hi"))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position: SCNVector3Make(-1, 0, -1), text: "Hi" ))
-        scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: SCNVector3Make(0, 0, -1), direction: .right))
+        scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: SCNVector3Make(0, 0, -2), direction: .right))
         scene.rootNode.addChildNode(SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  SCNVector3Make(1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1),text: "Hi"))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(3, 0, -1),text: "Hi"))

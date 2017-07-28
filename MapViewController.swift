@@ -8,8 +8,11 @@
 
 import UIKit
 import GoogleMaps
+import MapKit
 
 class MapViewController: UIViewController , UIGestureRecognizerDelegate {
+    
+    @IBOutlet weak var appleMap: MKMapView!
     
     let defaultZoomLabel : Float = 19.0
     let polylineStokeWidth : CGFloat = 10.0
@@ -19,17 +22,46 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        handleAppleMap()
+        //handleGoogleMap()
+    }
+    
+    //MARK:- Apple Map Set up
+    
+    private func handleAppleMap() {
+        self.appleMap.delegate = self
+        self.appleMap.showsUserLocation = true
+        
+        let locationManager = CLLocationManager()
+        locationManager.delegate = self
+        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+            locationManager.startUpdatingLocation()
+            locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+        }
         
         let myLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.first?.0 ?? 0, longitude: GPXFile.cherryHillPath.first?.1 ?? 0)
         let cabLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.last?.0 ?? 0, longitude: GPXFile.cherryHillPath.last?.1 ?? 0)
         
-        mapSetUp(location: myLocation)
-        
-        createMarker(location: myLocation, mapView: mapView, markerTitle: "My Location", snippet: "")
-        createMarker(location: cabLocation, mapView: mapView, markerTitle: "Cab Location", snippet: "Waiting...")
-        drawPath(map: mapView, pathArray: GPXFile.cherryHillPath)
+        createRegion(coordinate: myLocation)
+        // add annotations
+        createAnnotation(location: myLocation, title: "My Location")
+        createAnnotation(location: cabLocation, title: "Cab location")
     }
     
+    private func createAnnotation(location : CLLocationCoordinate2D, title : String ) {
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = location
+        annotation.title = title
+        self.appleMap.addAnnotation(annotation)
+    }
+    
+    private func createRegion(coordinate : CLLocationCoordinate2D) {
+        let span = MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)
+        let region = MKCoordinateRegion(center: coordinate, span: span)
+        self.appleMap.setRegion(region, animated: true)
+    }
+    
+    // MARK:- Open AR View
     
     @IBAction func openARView(_ sender: UIBarButtonItem) {
         if let arVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ARViewController") as? UINavigationController {
@@ -42,11 +74,23 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         }
     }
     
-    private func mapSetUp(location : CLLocationCoordinate2D) {
+    //MARK:- Google Map Set up
+    
+    private func handleGoogleMap() {
+        let myLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.first?.0 ?? 0, longitude: GPXFile.cherryHillPath.first?.1 ?? 0)
+        let cabLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.last?.0 ?? 0, longitude: GPXFile.cherryHillPath.last?.1 ?? 0)
+        googleMapSetUp(location: myLocation)
+        createMarker(location: myLocation, mapView: mapView, markerTitle: "My Location", snippet: "")
+        createMarker(location: cabLocation, mapView: mapView, markerTitle: "Cab Location", snippet: "Waiting...")
+        drawPath(map: mapView, pathArray: GPXFile.cherryHillPath)
+    }
+    
+    private func googleMapSetUp(location : CLLocationCoordinate2D) {
         let camera = GMSCameraPosition.camera(withLatitude: location.latitude, longitude: location.longitude, zoom: defaultZoomLabel)
-        mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
+        mapView = GMSMapView.map(withFrame: self.view.bounds, camera: camera)
         mapView.isUserInteractionEnabled = true
-        view = mapView
+        mapView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
+        view.addSubview(mapView)
     }
     
     private func createMarker(location : CLLocationCoordinate2D, mapView : GMSMapView, markerTitle : String, snippet : String ) {
@@ -94,5 +138,24 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         actionSheet.addAction(action4)
         actionSheet.addAction(cancel)
         self.present(actionSheet, animated: true, completion: nil)
+    }
+}
+
+extension MapViewController : MKMapViewDelegate , CLLocationManagerDelegate {
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "annotation")
+        annotationView.canShowCallout = true
+        annotationView.isEnabled = true
+        return annotationView
+    }
+    
+    func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
+        createRegion(coordinate: userLocation.coordinate)
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.last {
+            createRegion(coordinate: location.coordinate)
+        }
     }
 }

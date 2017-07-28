@@ -9,6 +9,7 @@
 import UIKit
 import SceneKit
 import ARKit
+import AVFoundation
 
 /* AR contains   1. Tracking ( World Tracking - ARAnchor )
                  2. Scene Understanding [a. Plane detection (ARPlaneAnchor) b. Hit Testing (placing object)  c. Light Estimation ]
@@ -56,7 +57,7 @@ class ARViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
        
-        sceneView.scene = SceneNodeCreator.sceneSetUp() // getScene() // 
+        sceneView.scene = getScene() // SceneNodeCreator.sceneSetUp() //
         sceneView.autoenablesDefaultLighting = true
         sceneView.allowsCameraControl = false
     }
@@ -251,7 +252,6 @@ extension ARViewController {
     }
     
     func showAlert(header : String? = "Header", message : String? = "Message")  {
-        
         let alertController = UIAlertController(title: header, message: message, preferredStyle: .alert)
         let okAction = UIAlertAction(title: "OK", style: .default) { (alert) in
             alertController.dismiss(animated: true, completion: nil)
@@ -272,11 +272,13 @@ extension ARViewController {
                 
                 var lastPosition = SCNVector3Zero
                 for eachCoordinate in eachSection {
-                    let position = SCNVector3Make(eachCoordinate.0, eachCoordinate.1, eachCoordinate.2)
-                    //scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position:position, text: "\(nodeNumber)"))
-                    scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: position, direction: getDirection(fromPoint: lastPosition, toPoint: position)))
+                    
+                    let arrowPosition = SCNVector3Make(eachCoordinate.0, eachCoordinate.1, eachCoordinate.2)
+                    let capsulePosition = SCNVector3Make(eachCoordinate.0, eachCoordinate.1 + 1 , eachCoordinate.2)
+                    scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position:capsulePosition, text: "\(nodeNumber)"))
+                    scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: arrowPosition, direction: getDirection(fromPoint: lastPosition, toPoint: arrowPosition)))
                     nodeNumber = nodeNumber + 1
-                    lastPosition = position
+                    lastPosition = arrowPosition
                 }
             }
             
@@ -298,7 +300,7 @@ extension ARViewController {
         var direction = ArrowDirection.towards
         let xDelta = toPoint.x - fromPoint.x
         let zDelta = toPoint.z - fromPoint.z
-        if xDelta != 0 && zDelta != 0 {
+        if xDelta != 0 || zDelta != 0 {
             if fabs(xDelta) > fabs(zDelta) {
                 direction = xDelta > 0 ? ArrowDirection.right : ArrowDirection.left
             } else {
