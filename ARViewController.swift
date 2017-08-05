@@ -9,7 +9,8 @@
 import UIKit
 import SceneKit
 import ARKit
-import AVFoundation
+import Vision
+import CoreML
 
 /* AR contains   1. Tracking ( World Tracking - ARAnchor )
                  2. Scene Understanding [a. Plane detection (ARPlaneAnchor) b. Hit Testing (placing object)  c. Light Estimation ]
@@ -169,6 +170,43 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         if !isNewPlaneDetected {
             //doHitTesting(frame: frame)
+        }
+        //detectCapturedImage(image: frame.capturedImage)
+    }
+   
+    //MARK:- Detect Captured Image
+    
+    private func detectCapturedImage( image : CVPixelBuffer ) {
+        if let image = convertImage(input: image) {
+            recognizeUsingVision(input: image)
+        }
+    }
+    
+    private func convertImage(input : CVPixelBuffer) -> UIImage? {
+        let ciImage = CIImage(cvPixelBuffer: input)
+        let ciContext = CIContext(options: nil)
+        if let videoImage = ciContext.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: CVPixelBufferGetWidth(input), height: CVPixelBufferGetHeight(input))) {
+            return UIImage(cgImage: videoImage)
+        }
+        return nil
+    }
+    
+    private func recognizeUsingVision(input : UIImage ) {
+        let coreMLmodel = Resnet50()
+        let model = try? VNCoreMLModel(for:coreMLmodel.model)
+        let request = VNCoreMLRequest(model: model!, completionHandler: myResultsMethod)
+        if let cgImage = input.cgImage {
+            let handler = VNImageRequestHandler(cgImage:cgImage, options: [:] )
+            try? handler.perform([request])
+        }
+    }
+    
+    private func myResultsMethod(request: VNRequest, error: Error?) {
+        guard let results = request.results as? [VNClassificationObservation] else { fatalError("Error in Results") }
+        for classification in results {
+            if classification.confidence > 0.25 {
+                title = classification.identifier
+            }
         }
     }
     

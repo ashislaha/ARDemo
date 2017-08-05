@@ -22,8 +22,21 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        registerLocationManager()
         handleAppleMap()
         //handleGoogleMap()
+    }
+    
+    private func registerLocationManager() {
+        guard let appDelegate = UIApplication.shared.delegate  as? AppDelegate else { return }
+        appDelegate.locationManager.delegate = self
+        
+        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+            appDelegate.locationManager.startUpdatingLocation()
+            appDelegate.locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+        } else {
+            appDelegate.locationManager.requestWhenInUseAuthorization()
+        }
     }
     
     //MARK:- Apple Map Set up
@@ -32,19 +45,12 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         self.appleMap.delegate = self
         self.appleMap.showsUserLocation = true
         
-        let locationManager = CLLocationManager()
-        locationManager.delegate = self
-        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
-            locationManager.startUpdatingLocation()
-            locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
-        }
-        
         let myLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.first?.0 ?? 0, longitude: GPXFile.cherryHillPath.first?.1 ?? 0)
         let cabLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.last?.0 ?? 0, longitude: GPXFile.cherryHillPath.last?.1 ?? 0)
         
         createRegion(coordinate: myLocation)
         // add annotations
-        createAnnotation(location: myLocation, title: "My Location")
+        //createAnnotation(location: myLocation, title: "Location")
         createAnnotation(location: cabLocation, title: "Cab location")
     }
     
@@ -143,19 +149,37 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
 
 extension MapViewController : MKMapViewDelegate , CLLocationManagerDelegate {
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "annotation")
-        annotationView.canShowCallout = true
-        annotationView.isEnabled = true
+        var annotationView : MKAnnotationView?
+        if sameLocation(location1: annotation.coordinate, location2: mapView.userLocation.coordinate) {
+            annotationView = MKAnnotationView()
+            annotationView?.image = UIImage(named: "bluedot")
+            annotationView?.backgroundColor = UIColor.clear
+            annotationView?.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
+        } else {
+            annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "annotation")
+        }
+        annotationView?.canShowCallout = true
+        annotationView?.isEnabled = true
         return annotationView
     }
     
+    private func sameLocation(location1 : CLLocationCoordinate2D, location2 : CLLocationCoordinate2D) -> Bool  {
+        return location1.latitude == location2.latitude && location1.longitude == location2.longitude
+    }
+    
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-        createRegion(coordinate: userLocation.coordinate)
+        // Make a blue dot
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             createRegion(coordinate: location.coordinate)
         }
+    }
+    
+    // Getting a new heading
+    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        let rotation = newHeading.magneticHeading * Double.pi / 180
+        print("rotation : \(rotation)")
     }
 }

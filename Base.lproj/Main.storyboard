@@ -59,7 +59,7 @@
         <scene sceneID="tXr-a1-R10">
             <objects>
                 <viewController id="BV1-FR-VrT" userLabel="ARViewController" customClass="ARViewController" customModule="ARDemo" customModuleProvider="target" sceneMemberID="viewController">
-                    <arscnView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="6iT-du-M5M">
+                    <arscnView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="Hde-wO-ZX2">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     </arscnView>
@@ -71,7 +71,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="sceneView" destination="6iT-du-M5M" id="5bg-AS-DMc"/>
+                        <outlet property="sceneView" destination="Hde-wO-ZX2" id="jeq-bT-t83"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SZV-WD-TEh" sceneMemberID="firstResponder"/>
