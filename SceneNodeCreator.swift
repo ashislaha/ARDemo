@@ -48,6 +48,15 @@ class SceneNodeCreator {
         return node
     }
     
+    class func createNodeWithImage(image : UIImage, position : SCNVector3 ) -> SCNNode {
+        let plane = SCNPlane(width: image.size.width/2, height: image.size.height / 2)
+        plane.firstMaterial?.diffuse.contents = image
+        plane.firstMaterial?.lightingModel = .constant
+        let node = SCNNode(geometry: plane)
+        node.position = position
+        return node
+    }
+    
     // arrow node
     class func getArrow(position : SCNVector3 , direction : ArrowDirection ) -> SCNNode {
         let color = UIColor.getRandomColor()
@@ -147,6 +156,34 @@ class SceneNodeCreator {
         }
         return nil
     }
+   
+    class func axesNode(quiverLength: CGFloat, quiverThickness: CGFloat) -> SCNNode {
+        let quiverThickness = (quiverLength / 50.0) * quiverThickness
+        let chamferRadius = quiverThickness / 2.0
+        
+        let xQuiverBox = SCNBox(width: quiverLength, height: quiverThickness, length: quiverThickness, chamferRadius: chamferRadius)
+        xQuiverBox.firstMaterial?.diffuse.contents = UIColor.red
+        let xQuiverNode = SCNNode(geometry: xQuiverBox)
+        xQuiverNode.position = SCNVector3Make(Float(quiverLength / 2.0), 0.0, 0.0)
+        
+        let yQuiverBox = SCNBox(width: quiverThickness, height: quiverLength, length: quiverThickness, chamferRadius: chamferRadius)
+        yQuiverBox.firstMaterial?.diffuse.contents = UIColor.green
+        let yQuiverNode = SCNNode(geometry: yQuiverBox)
+        yQuiverNode.position = SCNVector3Make(0.0, Float(quiverLength / 2.0), 0.0)
+        
+        let zQuiverBox = SCNBox(width: quiverThickness, height: quiverThickness, length: quiverLength, chamferRadius: chamferRadius)
+        zQuiverBox.firstMaterial?.diffuse.contents = UIColor.blue
+        let zQuiverNode = SCNNode(geometry: zQuiverBox)
+        zQuiverNode.position = SCNVector3Make(0.0, 0.0, Float(quiverLength / 2.0))
+        
+        let quiverNode = SCNNode()
+        quiverNode.addChildNode(xQuiverNode)
+        quiverNode.addChildNode(yQuiverNode)
+        quiverNode.addChildNode(zQuiverNode)
+        quiverNode.name = "Axes"
+        return quiverNode
+    }
+
     
     // Temporary Scene Graph
     class func sceneSetUp() -> SCNScene {
@@ -157,6 +194,7 @@ class SceneNodeCreator {
         scene.rootNode.addChildNode(SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  SCNVector3Make(1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1),text: "Hi"))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(3, 0, -1),text: "Hi"))
+        //scene.rootNode.addChildNode(SceneNodeCreator.axesNode(quiverLength: 5, quiverThickness: 1))
         return scene
     }
 }

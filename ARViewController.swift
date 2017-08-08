@@ -52,6 +52,7 @@ class ARViewController: UIViewController {
         let configuration = ARWorldTrackingSessionConfiguration()
         configuration.planeDetection = .horizontal // Plane Detection
         configuration.isLightEstimationEnabled = true // light estimation
+        configuration.worldAlignment = .gravityAndHeading
         sceneView.session.run(configuration)
     }
     
@@ -176,6 +177,8 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
    
     //MARK:- Detect Captured Image
     
+    /*
+     
     private func detectCapturedImage( image : CVPixelBuffer ) {
         if let image = convertImage(input: image) {
             recognizeUsingVision(input: image)
@@ -190,7 +193,7 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
         }
         return nil
     }
-    
+     
     private func recognizeUsingVision(input : UIImage ) {
         let coreMLmodel = Resnet50()
         let model = try? VNCoreMLModel(for:coreMLmodel.model)
@@ -209,6 +212,7 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
             }
         }
     }
+ */
     
     //MARK:- Hit-Test (Scene Understanding)
     
