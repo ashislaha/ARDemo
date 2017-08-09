@@ -59,7 +59,7 @@ class ARViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
        
-        sceneView.scene = getScene() // SceneNodeCreator.sceneSetUp() //
+        sceneView.scene = getScene() // SceneNodeCreator.sceneSetUp()
         sceneView.autoenablesDefaultLighting = true
         sceneView.allowsCameraControl = false
     }
@@ -310,15 +310,16 @@ extension ARViewController {
     private func getScene() -> SCNScene {
         let scene = SCNScene()
         if let worldSectionsPositions = worldSectionsPositions {
+            var lastPosition = SCNVector3Zero
+            
             for eachSection in worldSectionsPositions {
-                
-                var lastPosition = SCNVector3Zero
                 for eachCoordinate in eachSection {
                     
                     let arrowPosition = SCNVector3Make(eachCoordinate.0, eachCoordinate.1, eachCoordinate.2)
                     let capsulePosition = SCNVector3Make(eachCoordinate.0, eachCoordinate.1 + 1 , eachCoordinate.2)
                     scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position:capsulePosition, text: "\(nodeNumber)"))
-                    scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: arrowPosition, direction: getDirection(fromPoint: lastPosition, toPoint: arrowPosition)))
+                    //scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: arrowPosition, direction: getDirection(fromPoint: lastPosition, toPoint: arrowPosition)))
+                    scene.rootNode.addChildNode(SceneNodeCreator.drawPath(position1: lastPosition, position2: arrowPosition))
                     nodeNumber = nodeNumber + 1
                     lastPosition = arrowPosition
                 }
@@ -329,9 +330,10 @@ extension ARViewController {
                 if let referencePoint = firstSection.first {
                     let carRealCoordinate = calculateRealCoordinate(mapCoordinate: carLocation, referencePoint: referencePoint)
                     let position = SCNVector3Make(carRealCoordinate.0, carRealCoordinate.1, carRealCoordinate.2)
-                    let planeNode = SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  position)
-                    planeNode.scale = SCNVector3Make(10, 10, 10)
-                    scene.rootNode.addChildNode(planeNode)
+                    //let node = SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  position)
+                    let node = SceneNodeCreator.createNodeWithImage(image:  UIImage(named: "ola_logo")!, position: position)
+                    node.scale = SCNVector3Make(1, 1, 1)
+                    scene.rootNode.addChildNode(node)
                 }
             }
         }

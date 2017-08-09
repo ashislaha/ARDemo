@@ -49,7 +49,7 @@ class SceneNodeCreator {
     }
     
     class func createNodeWithImage(image : UIImage, position : SCNVector3 ) -> SCNNode {
-        let plane = SCNPlane(width: image.size.width/2, height: image.size.height / 2)
+        let plane = SCNPlane(width: 5, height: 5)
         plane.firstMaterial?.diffuse.contents = image
         plane.firstMaterial?.lightingModel = .constant
         let node = SCNNode(geometry: plane)
@@ -156,34 +156,36 @@ class SceneNodeCreator {
         }
         return nil
     }
-   
-    class func axesNode(quiverLength: CGFloat, quiverThickness: CGFloat) -> SCNNode {
-        let quiverThickness = (quiverLength / 50.0) * quiverThickness
-        let chamferRadius = quiverThickness / 2.0
-        
-        let xQuiverBox = SCNBox(width: quiverLength, height: quiverThickness, length: quiverThickness, chamferRadius: chamferRadius)
-        xQuiverBox.firstMaterial?.diffuse.contents = UIColor.red
-        let xQuiverNode = SCNNode(geometry: xQuiverBox)
-        xQuiverNode.position = SCNVector3Make(Float(quiverLength / 2.0), 0.0, 0.0)
-        
-        let yQuiverBox = SCNBox(width: quiverThickness, height: quiverLength, length: quiverThickness, chamferRadius: chamferRadius)
-        yQuiverBox.firstMaterial?.diffuse.contents = UIColor.green
-        let yQuiverNode = SCNNode(geometry: yQuiverBox)
-        yQuiverNode.position = SCNVector3Make(0.0, Float(quiverLength / 2.0), 0.0)
-        
-        let zQuiverBox = SCNBox(width: quiverThickness, height: quiverThickness, length: quiverLength, chamferRadius: chamferRadius)
-        zQuiverBox.firstMaterial?.diffuse.contents = UIColor.blue
-        let zQuiverNode = SCNNode(geometry: zQuiverBox)
-        zQuiverNode.position = SCNVector3Make(0.0, 0.0, Float(quiverLength / 2.0))
-        
-        let quiverNode = SCNNode()
-        quiverNode.addChildNode(xQuiverNode)
-        quiverNode.addChildNode(yQuiverNode)
-        quiverNode.addChildNode(zQuiverNode)
-        quiverNode.name = "Axes"
-        return quiverNode
-    }
 
+    class func drawPath(position1 : SCNVector3, position2 : SCNVector3 ) -> SCNNode {
+        
+        // calculate Angle
+        let dx = position2.x - position1.x
+        let dz = (-1.0) * (position2.z - position1.z)
+        let theta = atan(Double(dz/dx))
+        print("Angle between point1 and point2 is : \(theta * 180 / Double.pi) along X-Axis")
+        
+        //Create Node
+        let width = CGFloat(sqrt( dx*dx + dz*dz ))
+        let height : CGFloat = 0.1
+        let length : CGFloat = 0.1
+        let chamferRadius : CGFloat = 0.05
+        let route = SCNBox(width: width, height: height, length: length, chamferRadius: chamferRadius)
+        route.firstMaterial?.diffuse.contents = UIColor.red //UIColor(red: 210.0/255.0, green: 217.0/255.0, blue: 66.0/255.0, alpha: 1.0)
+        let midPosition = SCNVector3Make((position1.x+position2.x)/2, 0.0, (position1.z+position2.z)/2)
+        let node = SCNNode(geometry: route)
+        node.position = midPosition
+        
+        // Do rotation of node in "theta" angle along Y-axis
+        let rotation = CABasicAnimation(keyPath: "rotation")
+        rotation.fromValue = SCNVector4Make(0, 1, 0, 0)
+        rotation.toValue = SCNVector4Make(0, 1, 0,  Float(theta))
+        rotation.duration = 2.0
+        node.addAnimation(rotation, forKey: "Rotate it")
+        
+        node.rotation = SCNVector4Make(0, 1, 0, Float(theta))
+        return node
+    }
     
     // Temporary Scene Graph
     class func sceneSetUp() -> SCNScene {
@@ -194,7 +196,8 @@ class SceneNodeCreator {
         scene.rootNode.addChildNode(SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  SCNVector3Make(1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1),text: "Hi"))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(3, 0, -1),text: "Hi"))
-        //scene.rootNode.addChildNode(SceneNodeCreator.axesNode(quiverLength: 5, quiverThickness: 1))
+        //scene.rootNode.addChildNode(SceneNodeCreator.createNodeWithImage(image: UIImage(named: "ola_logo")!, position: SCNVector3Make(0, 1, -20)))
+        //scene.rootNode.addChildNode(SceneNodeCreator.drawPath(position1: SCNVector3Make(0, 0, 0), position2: SCNVector3Make(4, 0, -3)))
         return scene
     }
 }
