@@ -316,9 +316,7 @@ extension ARViewController {
                 for eachCoordinate in eachSection {
                     
                     let arrowPosition = SCNVector3Make(eachCoordinate.0, eachCoordinate.1, eachCoordinate.2)
-                    let capsulePosition = SCNVector3Make(eachCoordinate.0, eachCoordinate.1 + 1 , eachCoordinate.2)
-                    scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position:capsulePosition, text: "\(nodeNumber)"))
-                    //scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: arrowPosition, direction: getDirection(fromPoint: lastPosition, toPoint: arrowPosition)))
+                    scene.rootNode.addChildNode(SceneNodeCreator.drawArrow(position1: lastPosition, position2: arrowPosition))
                     scene.rootNode.addChildNode(SceneNodeCreator.drawPath(position1: lastPosition, position2: arrowPosition))
                     nodeNumber = nodeNumber + 1
                     lastPosition = arrowPosition
@@ -331,7 +329,7 @@ extension ARViewController {
                     let carRealCoordinate = calculateRealCoordinate(mapCoordinate: carLocation, referencePoint: referencePoint)
                     let position = SCNVector3Make(carRealCoordinate.0, carRealCoordinate.1, carRealCoordinate.2)
                     //let node = SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  position)
-                    let node = SceneNodeCreator.createNodeWithImage(image:  UIImage(named: "ola_logo")!, position: position)
+                    let node = SceneNodeCreator.createNodeWithImage(image:  UIImage(named: "ola_logo")!, position: position, width: 7, height: 7)
                     node.scale = SCNVector3Make(1, 1, 1)
                     scene.rootNode.addChildNode(node)
                 }

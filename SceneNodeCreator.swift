@@ -48,8 +48,54 @@ class SceneNodeCreator {
         return node
     }
     
-    class func createNodeWithImage(image : UIImage, position : SCNVector3 ) -> SCNNode {
-        let plane = SCNPlane(width: 5, height: 5)
+    class func drawPath(position1 : SCNVector3, position2 : SCNVector3 ) -> SCNNode {
+        
+        // calculate Angle
+        let dx = position2.x - position1.x
+        let dz = (-1.0) * (position2.z - position1.z)
+        let theta = atan(Double(dz/dx))
+        print("Angle between point1 and point2 is : \(theta * 180 / Double.pi) along Y-Axis")
+        
+        //Create Node
+        let width = CGFloat(sqrt( dx*dx + dz*dz ))
+        let height : CGFloat = 0.1
+        let length : CGFloat = 0.3
+        let chamferRadius : CGFloat = 0.05
+        let route = SCNBox(width: width, height: height, length: length, chamferRadius: chamferRadius)
+        route.firstMaterial?.diffuse.contents = UIColor(red: 210.0/255.0, green: 217.0/255.0, blue: 66.0/255.0, alpha: 1.0)
+        let midPosition = SCNVector3Make((position1.x+position2.x)/2, 0.0, (position1.z+position2.z)/2)
+        let node = SCNNode(geometry: route)
+        node.position = midPosition
+        
+        // Do rotation of node in "theta" angle along Y-axis with Animation
+        let rotation = CABasicAnimation(keyPath: "rotation")
+        rotation.fromValue = SCNVector4Make(0, 1, 0, 0)
+        rotation.toValue = SCNVector4Make(0, 1, 0,  Float(theta))
+        rotation.duration = 2.0
+        node.addAnimation(rotation, forKey: "Rotate it")
+        
+        node.rotation = SCNVector4Make(0, 1, 0, Float(theta))
+        return node
+    }
+    
+    class func drawArrow(position1 : SCNVector3, position2 : SCNVector3 ) -> SCNNode {
+        
+        // calculate Angle
+        let dx = position2.x - position1.x
+        let dz = (-1.0) * (position2.z - position1.z)
+        let theta = atan(Double(dz/dx))
+        print("Angle between point1 and point2 is : \(theta * 180 / Double.pi) along Y-Axis")
+        
+        // create node
+        let midPosition = SCNVector3Make((position1.x+position2.x)/2, 1.0, (position1.z+position2.z)/2)
+        let arrowNode = SceneNodeCreator.createNodeWithImage(image: UIImage(named: "arrow")!, position: midPosition, width: 0.5, height: 0.5)
+        arrowNode.rotation = SCNVector4Make(0, 1, 0, Float(theta))
+        
+        return arrowNode
+    }
+    
+    class func createNodeWithImage(image : UIImage, position : SCNVector3 , width : CGFloat, height : CGFloat ) -> SCNNode {
+        let plane = SCNPlane(width: width, height: height)
         plane.firstMaterial?.diffuse.contents = image
         plane.firstMaterial?.lightingModel = .constant
         let node = SCNNode(geometry: plane)
@@ -57,8 +103,8 @@ class SceneNodeCreator {
         return node
     }
     
-    // arrow node
-    class func getArrow(position : SCNVector3 , direction : ArrowDirection ) -> SCNNode {
+    // Composite node
+    class func getCompositeNode(position : SCNVector3 , direction : ArrowDirection ) -> SCNNode {
         let color = UIColor.getRandomColor()
         let cylinder = SCNCylinder(radius: 0.1, height: 0.6)
         cylinder.firstMaterial?.diffuse.contents = color
@@ -156,44 +202,13 @@ class SceneNodeCreator {
         }
         return nil
     }
-
-    class func drawPath(position1 : SCNVector3, position2 : SCNVector3 ) -> SCNNode {
-        
-        // calculate Angle
-        let dx = position2.x - position1.x
-        let dz = (-1.0) * (position2.z - position1.z)
-        let theta = atan(Double(dz/dx))
-        print("Angle between point1 and point2 is : \(theta * 180 / Double.pi) along X-Axis")
-        
-        //Create Node
-        let width = CGFloat(sqrt( dx*dx + dz*dz ))
-        let height : CGFloat = 0.1
-        let length : CGFloat = 0.1
-        let chamferRadius : CGFloat = 0.05
-        let route = SCNBox(width: width, height: height, length: length, chamferRadius: chamferRadius)
-        route.firstMaterial?.diffuse.contents = UIColor(red: 210.0/255.0, green: 217.0/255.0, blue: 66.0/255.0, alpha: 1.0)
-        let midPosition = SCNVector3Make((position1.x+position2.x)/2, 0.0, (position1.z+position2.z)/2)
-        let node = SCNNode(geometry: route)
-        node.position = midPosition
-        
-        // Do rotation of node in "theta" angle along Y-axis
-        /* // Animation 
-        let rotation = CABasicAnimation(keyPath: "rotation")
-        rotation.fromValue = SCNVector4Make(0, 1, 0, 0)
-        rotation.toValue = SCNVector4Make(0, 1, 0,  Float(theta))
-        rotation.duration = 2.0
-        node.addAnimation(rotation, forKey: "Rotate it")
-        */
-        node.rotation = SCNVector4Make(0, 1, 0, Float(theta))
-        return node
-    }
     
     // Temporary Scene Graph
     class func sceneSetUp() -> SCNScene {
         let scene = SCNScene()
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Box, position: SCNVector3Make(-2, 0, -1), text: "Hi"))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Capsule, position: SCNVector3Make(-1, 0, -1), text: "Hi" ))
-        scene.rootNode.addChildNode(SceneNodeCreator.getArrow(position: SCNVector3Make(0, 0, -2), direction: .right))
+        scene.rootNode.addChildNode(SceneNodeCreator.getCompositeNode(position: SCNVector3Make(0, 0, -2), direction: .right))
         scene.rootNode.addChildNode(SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  SCNVector3Make(1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1),text: "Hi"))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(3, 0, -1),text: "Hi"))
