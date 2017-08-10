@@ -171,18 +171,19 @@ class SceneNodeCreator {
         let length : CGFloat = 0.1
         let chamferRadius : CGFloat = 0.05
         let route = SCNBox(width: width, height: height, length: length, chamferRadius: chamferRadius)
-        route.firstMaterial?.diffuse.contents = UIColor.red //UIColor(red: 210.0/255.0, green: 217.0/255.0, blue: 66.0/255.0, alpha: 1.0)
+        route.firstMaterial?.diffuse.contents = UIColor(red: 210.0/255.0, green: 217.0/255.0, blue: 66.0/255.0, alpha: 1.0)
         let midPosition = SCNVector3Make((position1.x+position2.x)/2, 0.0, (position1.z+position2.z)/2)
         let node = SCNNode(geometry: route)
         node.position = midPosition
         
         // Do rotation of node in "theta" angle along Y-axis
+        /* // Animation 
         let rotation = CABasicAnimation(keyPath: "rotation")
         rotation.fromValue = SCNVector4Make(0, 1, 0, 0)
         rotation.toValue = SCNVector4Make(0, 1, 0,  Float(theta))
         rotation.duration = 2.0
         node.addAnimation(rotation, forKey: "Rotate it")
-        
+        */
         node.rotation = SCNVector4Make(0, 1, 0, Float(theta))
         return node
     }
