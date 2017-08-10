@@ -36,6 +36,11 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="h8M-Sc-3ej">
+                        <barButtonItem key="leftBarButtonItem" title="Clean Map" id="pDJ-ym-bWI">
+                            <connections>
+                                <action selector="clearGoogleMap:" destination="Khz-Y8-HVS" id="irf-32-I8t"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="ARView" id="Sh2-x8-5iB">
                             <connections>
                                 <action selector="openARView:" destination="Khz-Y8-HVS" id="gdr-o5-iip"/>
@@ -44,6 +49,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="appleMap" destination="hKZ-jf-py2" id="ueo-sm-vRF"/>
+                        <outlet property="googleMapCleanOutlet" destination="pDJ-ym-bWI" id="txb-P8-Vno"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pkV-FV-yDt" userLabel="First Responder" sceneMemberID="firstResponder"/>

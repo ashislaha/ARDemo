@@ -10,15 +10,27 @@ import UIKit
 import GoogleMaps
 import MapKit
 
+enum Flow {
+    case createMarkerByLongPressAndShowDirection
+    case createMarkerByServerProvidedLocations
+}
+
+
 class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     
     @IBOutlet weak var appleMap: MKMapView!
+    @IBOutlet weak var googleMapCleanOutlet: UIBarButtonItem!
     
     let defaultZoomLabel : Float = 19.0
-    let polylineStokeWidth : CGFloat = 10.0
+    let polylineStokeWidth : CGFloat = 5.0
     
     private var mapView : GMSMapView!
     private var userLocationMarker : GMSMarker!
+    private var polyline : GMSPolyline!
+    
+    private var flow : Flow = .createMarkerByLongPressAndShowDirection
+    private var paths : [[(Double,Double)]] = GPXFile.cherryHillsSectionCoordinates
+    private var destination : (Double,Double) = GPXFile.cherryHillsCarLocation
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,8 +83,8 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     @IBAction func openARView(_ sender: UIBarButtonItem) {
         if let arVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ARViewController") as? UINavigationController {
             if let vc = arVC.visibleViewController as? ARViewController {
-                vc.sectionCoordinates = GPXFile.cherryHillsSectionCoordinates
-                vc.carLocation = GPXFile.cherryHillsCarLocation
+                vc.sectionCoordinates = paths
+                vc.carLocation = destination
             }
             self.present(arVC, animated: true, completion: nil)
         }
@@ -80,13 +92,30 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     
     //MARK:- Google Map Set up
     
+    @IBAction func clearGoogleMap(_ sender: UIBarButtonItem) {
+        polyline?.map = nil
+        paths = []
+        destination = (Double(),Double())
+    }
+    
     private func handleGoogleMap() {
-        let myLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.first?.0 ?? 0, longitude: GPXFile.cherryHillPath.first?.1 ?? 0)
-        let cabLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.last?.0 ?? 0, longitude: GPXFile.cherryHillPath.last?.1 ?? 0)
-        googleMapSetUp(location: myLocation)
-        createMarker(location: myLocation, mapView: mapView, markerTitle: "From Location", snippet: "")
-        createMarker(location: cabLocation, mapView: mapView, markerTitle: "Cab Location", snippet: "Waiting...")
-        drawPath(map: mapView, pathArray: GPXFile.cherryHillPath)
+        
+        guard let appDelegate = UIApplication.shared.delegate  as? AppDelegate else { return }
+        if let userLocation = appDelegate.locationManager.location?.coordinate {
+              googleMapSetUp(location: userLocation)
+        }
+        
+        if flow == .createMarkerByLongPressAndShowDirection {
+            mapView.delegate = self
+            
+        } else if flow == .createMarkerByServerProvidedLocations {
+            
+            let fromLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.first?.0 ?? 0, longitude: GPXFile.cherryHillPath.first?.1 ?? 0)
+            let cabLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.last?.0 ?? 0, longitude: GPXFile.cherryHillPath.last?.1 ?? 0)
+            createMarker(location: fromLocation, mapView: mapView, markerTitle: "From Location", snippet: "")
+            createMarker(location: cabLocation, mapView: mapView, markerTitle: "Cab Location", snippet: "Waiting...")
+            drawPath(map: mapView, pathArray: GPXFile.cherryHillPath)
+        }
     }
     
     private func googleMapSetUp(location : CLLocationCoordinate2D) {
@@ -164,5 +193,72 @@ extension MapViewController : MKMapViewDelegate , CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
         let rotation = newHeading.magneticHeading * Double.pi / 180
         print("rotation : \(rotation)")
+    }
+}
+
+extension MapViewController : GMSMapViewDelegate {
+    //MARK:- Create marker on long press
+    
+    func mapView(_ mapView: GMSMapView, didLongPressAt coordinate: CLLocationCoordinate2D) {
+        
+        guard let appDelegate = UIApplication.shared.delegate  as? AppDelegate else { return }
+        if let userLocation = appDelegate.locationManager.location?.coordinate {
+            fetchRoute(source: userLocation, destination: coordinate, completionHandler: { [weak self] (polyline) in
+                
+                if let polyline = polyline as? GMSPolyline {
+                    polyline.strokeColor = UIColor.blue
+                    polyline.strokeWidth = self?.polylineStokeWidth ?? 5.0
+                    self?.polyline = polyline
+                    self?.polyline.map = self?.mapView
+                    
+                    // update path and destination
+                    self?.destination = (coordinate.latitude, coordinate.longitude)
+                    if let path = polyline.path {
+                        var polylinePath : [(Double,Double)] = []
+                        for i in 0..<path.count() {
+                            let point = path.coordinate(at: i)
+                            polylinePath.append((point.latitude,point.longitude))
+                        }
+                        self?.paths = []
+                        self?.paths.append(polylinePath)
+                    }
+                }
+            })
+        }
+    }
+    
+    private func fetchRoute(source : CLLocationCoordinate2D, destination : CLLocationCoordinate2D , completionHandler : ((Any) -> ())? ) {
+        let origin = String(format: "%f,%f", source.latitude,source.longitude)
+        let destination = String(format: "%f,%f", destination.latitude,destination.longitude)
+        let directionsAPI = "https://maps.googleapis.com/maps/api/directions/json?"
+        let directionsUrlString = String(format: "%@&origin=%@&destination=%@&mode=driving", directionsAPI, origin , destination ) // walking , driving
+        
+        if let url = URL(string: directionsUrlString) {
+            
+            let fetchDirection = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+                
+                if error == nil && data != nil {
+                    var polyline : GMSPolyline?
+                    if let dictionary = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments ) as? [String : Any] {
+                        if let routesArray = dictionary?["routes"] as? [Any], !routesArray.isEmpty {
+                            if let routeDict = routesArray.first as? [String : Any] , !routeDict.isEmpty {
+                                if let routeOverviewPolyline = routeDict["overview_polyline"] as? [String : Any] , !routeOverviewPolyline.isEmpty {
+                                    if let points = routeOverviewPolyline["points"] as? String {
+                                        if let path = GMSPath(fromEncodedPath: points) {
+                                            polyline = GMSPolyline(path: path)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    DispatchQueue.main.async {
+                        if let polyline = polyline { completionHandler?(polyline) }
+                    }
+                }
+            })
+            fetchDirection.resume()
+        }
     }
 }
