@@ -62,7 +62,7 @@ class SceneNodeCreator {
         //Create Node
         let width = CGFloat(sqrt( dx*dx + dz*dz ))
         let height : CGFloat = 0.1
-        let length : CGFloat = 0.5
+        let length : CGFloat = 0.8
         let chamferRadius : CGFloat = 0.05
         let route = SCNBox(width: width, height: height, length: length, chamferRadius: chamferRadius)
         route.firstMaterial?.diffuse.contents = UIColor(red: 210.0/255.0, green: 217.0/255.0, blue: 66.0/255.0, alpha: 1.0)

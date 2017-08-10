@@ -107,6 +107,7 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         
         if flow == .createMarkerByLongPressAndShowDirection {
             mapView.delegate = self
+            title = "Tap On Map"
             
         } else if flow == .createMarkerByServerProvidedLocations {
             

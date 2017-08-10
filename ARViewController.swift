@@ -98,7 +98,7 @@ class ARViewController: UIViewController {
         rotation.delegate = self
         rotation.fromValue = SCNVector4Make(0, 1, 0, 0)
         rotation.toValue = SCNVector4Make(0, 1, 0, -Float(Double.pi / 2 )) // clockwise 90 degree around y-axis
-        rotation.duration = 10.0
+        rotation.duration = 5.0
         node.addAnimation(rotation, forKey: "Rotate Me")
         
         let basicAnimation = CABasicAnimation(keyPath: "opacity")
@@ -135,7 +135,8 @@ extension ARViewController : CAAnimationDelegate {
     }
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         if let node = tappedNode {
-            node.geometry?.firstMaterial?.diffuse.contents = UIColor.getRandomColor()
+            print("Tapped Node : \(node)")
+            //node.geometry?.firstMaterial?.diffuse.contents = UIColor.getRandomColor()
         }
     }
 }
