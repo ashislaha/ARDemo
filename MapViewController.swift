@@ -29,14 +29,42 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     private var polyline : GMSPolyline!
     
     private var flow : Flow = .createMarkerByLongPressAndShowDirection
-    private var paths : [[(Double,Double)]] = GPXFile.cherryHillsSectionCoordinates
-    private var destination : (Double,Double) = GPXFile.cherryHillsCarLocation
+    private var paths : [[(Double,Double)]] = []
+    private var destination : (Double,Double) = (Double(),Double())
+    
+    //MARK:- View Controller Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         registerLocationManager()
         //handleAppleMap()
         handleGoogleMap()
+        registerNotification()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        guard let appDelegate = UIApplication.shared.delegate  as? AppDelegate else { return }
+        appDelegate.locationManager.stopUpdatingLocation()
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard let appDelegate = UIApplication.shared.delegate  as? AppDelegate else { return }
+        appDelegate.locationManager.startUpdatingLocation()
+        reachabilityCheck()
+    }
+    
+    private func reachabilityCheck() {
+        if !ReachabilityHelper.isInternetAvailable() {
+            let alert = UIAlertController(title: "No Internet", message: "Please connect to Internet", preferredStyle: .alert)
+            let okButton = UIAlertAction(title: "Ok", style: .default, handler: { (button) in
+                alert.dismiss(animated: true, completion: nil)
+            })
+            alert.addAction(okButton)
+            present(alert, animated: true, completion: nil)
+        }
     }
     
     private func registerLocationManager() {
@@ -48,6 +76,12 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
             appDelegate.locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
         } else {
             appDelegate.locationManager.requestWhenInUseAuthorization()
+        }
+    }
+    
+    private func registerNotification() {
+        NotificationCenter.default.addObserver(forName: .UIApplicationWillEnterForeground, object: nil, queue: OperationQueue.main) { [weak self] (notification) in
+            self?.reachabilityCheck()
         }
     }
     
@@ -133,6 +167,7 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         marker.snippet = snippet
         if let image = image {
             marker.icon = image
+            marker.groundAnchor = CGPoint(x: 0.5, y: 1.0)
         }
         if let markerName = markerName {
             marker.userData = markerName
@@ -185,6 +220,7 @@ extension MapViewController : MKMapViewDelegate , CLLocationManagerDelegate {
             userLocationMarker.snippet = ""
             if let image = UIImage(named: "blue-dot") {
                 userLocationMarker.icon = image
+                userLocationMarker.groundAnchor = CGPoint(x: 0.5, y: 1.0)
             }
             userLocationMarker.map = mapView
         }
@@ -198,33 +234,57 @@ extension MapViewController : MKMapViewDelegate , CLLocationManagerDelegate {
 }
 
 extension MapViewController : GMSMapViewDelegate {
+    
     //MARK:- Create marker on long press
     
     func mapView(_ mapView: GMSMapView, didLongPressAt coordinate: CLLocationCoordinate2D) {
         
+        createMarker(location: coordinate, mapView: self.mapView, markerTitle: "Destination", snippet: "", image: UIImage(named: "drop-pin"))
+        reachabilityCheck()
         guard let appDelegate = UIApplication.shared.delegate  as? AppDelegate else { return }
+        
         if let userLocation = appDelegate.locationManager.location?.coordinate {
-            fetchRoute(source: userLocation, destination: coordinate, completionHandler: { [weak self] (polyline) in
-                
-                if let polyline = polyline as? GMSPolyline {
-                    polyline.strokeColor = UIColor.blue
-                    polyline.strokeWidth = self?.polylineStokeWidth ?? 5.0
-                    self?.polyline = polyline
-                    self?.polyline.map = self?.mapView
+            if ReachabilityHelper.isInternetAvailable() {
+                fetchRoute(source: userLocation, destination: coordinate, completionHandler: { [weak self] (polyline) in
                     
-                    // update path and destination
-                    self?.destination = (coordinate.latitude, coordinate.longitude)
-                    if let path = polyline.path {
-                        var polylinePath : [(Double,Double)] = []
-                        for i in 0..<path.count() {
-                            let point = path.coordinate(at: i)
-                            polylinePath.append((point.latitude,point.longitude))
+                    if let polyline = polyline as? GMSPolyline {
+                        
+                        // Add user location
+                        let path = GMSMutablePath()
+                        if let userlocation = self?.userLocationMarker.position {
+                            path.add(userlocation)
                         }
-                        self?.paths = []
-                        self?.paths.append(polylinePath)
+                        
+                        // add rest of the  co-ordinates
+                        if let polyLinePath = polyline.path, polyLinePath.count() > 0 {
+                            for i in 0..<polyLinePath.count() {
+                                path.add(polyLinePath.coordinate(at: i))
+                            }
+                        }
+                        
+                        let updatedPolyline = GMSPolyline(path: path)
+                        updatedPolyline.strokeColor = UIColor.blue
+                        updatedPolyline.strokeWidth = self?.polylineStokeWidth ?? 5.0
+                        
+                        self?.polyline?.map = nil
+                        self?.polyline = updatedPolyline
+                        self?.polyline?.map = self?.mapView
+                        
+                        // update path and destination
+                        self?.destination = (coordinate.latitude, coordinate.longitude)
+                        
+                        if let path = updatedPolyline.path {
+                            var polylinePath : [(Double,Double)] = []
+                            for i in 0..<path.count() {
+                                let point = path.coordinate(at: i)
+                                polylinePath.append((point.latitude,point.longitude))
+                            }
+                            self?.paths = []
+                            self?.paths.append(polylinePath)
+                        }
                     }
-                }
-            })
+                })
+            }
         }
     }
     
@@ -232,7 +292,7 @@ extension MapViewController : GMSMapViewDelegate {
         let origin = String(format: "%f,%f", source.latitude,source.longitude)
         let destination = String(format: "%f,%f", destination.latitude,destination.longitude)
         let directionsAPI = "https://maps.googleapis.com/maps/api/directions/json?"
-        let directionsUrlString = String(format: "%@&origin=%@&destination=%@&mode=driving", directionsAPI, origin , destination ) // walking , driving
+        let directionsUrlString = String(format: "%@&origin=%@&destination=%@&mode=driving",directionsAPI,origin,destination ) // walking , driving
         
         if let url = URL(string: directionsUrlString) {
             

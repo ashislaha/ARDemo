@@ -51,7 +51,7 @@ class ARViewController: UIViewController {
 
         let configuration = ARWorldTrackingConfiguration()
         //configuration.planeDetection = .horizontal // Plane Detection
-        configuration.isLightEstimationEnabled = true // light estimation
+        //configuration.isLightEstimationEnabled = true // light estimation
         configuration.worldAlignment = .gravityAndHeading
         sceneView.session.run(configuration)
     }
@@ -258,6 +258,7 @@ extension ARViewController {
     
     // While Tracking State changes ( Not-running -> Normal <-> Limited ) ARSessionDelegate
     
+    /*
     func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
         switch camera.trackingState {
         case .limited(let reason) :
@@ -269,6 +270,7 @@ extension ARViewController {
         case .normal, .notAvailable : break
         }
     }
+    */
     
     func session(_ session: ARSession, didFailWithError error: Error) {
        showAlert(header: "Session Failure", message: "\(error.localizedDescription)")
@@ -330,8 +332,9 @@ extension ARViewController {
                     let carRealCoordinate = calculateRealCoordinate(mapCoordinate: carLocation, referencePoint: referencePoint)
                     let position = SCNVector3Make(carRealCoordinate.0, carRealCoordinate.1, carRealCoordinate.2)
                     //let node = SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  position)
-                    let node = SceneNodeCreator.createNodeWithImage(image:  UIImage(named: "ola_logo")!, position: position, width: 10, height: 10)
-                    node.scale = SCNVector3Make(1, 1, 1)
+                    //let node = SceneNodeCreator.createNodeWithImage(image:  UIImage(named: "ola_logo")!, position: position, width: 10, height: 10)
+                    let node = SceneNodeCreator.getGeometryNode(type: .Capsule, position: position,text: "Destination")
+                    node.scale = SCNVector3Make(5, 5, 5)
                     scene.rootNode.addChildNode(node)
                 }
             }

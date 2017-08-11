@@ -71,14 +71,13 @@ class SceneNodeCreator {
         node.position = midPosition
         
         // Do rotation of node in "theta" angle along Y-axis with Animation
-        /*
+       /*
         let rotation = CABasicAnimation(keyPath: "rotation")
         rotation.fromValue = SCNVector4Make(0, 1, 0, 0)
         rotation.toValue = SCNVector4Make(0, 1, 0,  Float(theta))
         rotation.duration = 2.0
         node.addAnimation(rotation, forKey: "Rotate it")
-         */
-        
+        */
         node.rotation = SCNVector4Make(0, 1, 0, Float(theta))
         return node
     }
