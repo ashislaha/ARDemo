@@ -27,6 +27,7 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     private var mapView : GMSMapView!
     private var userLocationMarker : GMSMarker!
     private var polyline : GMSPolyline!
+    private var dropLocationMarker : GMSMarker!
     
     private var flow : Flow = .createMarkerByLongPressAndShowDirection
     private var paths : [[(Double,Double)]] = []
@@ -73,7 +74,7 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         
         if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
             appDelegate.locationManager.startUpdatingLocation()
-            appDelegate.locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+            appDelegate.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         } else {
             appDelegate.locationManager.requestWhenInUseAuthorization()
         }
@@ -128,6 +129,7 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
     
     @IBAction func clearGoogleMap(_ sender: UIBarButtonItem) {
         polyline?.map = nil
+        dropLocationMarker?.map = nil
         paths = []
         destination = (Double(),Double())
     }
@@ -147,8 +149,8 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
             
             let fromLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.first?.0 ?? 0, longitude: GPXFile.cherryHillPath.first?.1 ?? 0)
             let cabLocation = CLLocationCoordinate2D(latitude: GPXFile.cherryHillPath.last?.0 ?? 0, longitude: GPXFile.cherryHillPath.last?.1 ?? 0)
-            createMarker(location: fromLocation, mapView: mapView, markerTitle: "From Location", snippet: "")
-            createMarker(location: cabLocation, mapView: mapView, markerTitle: "Cab Location", snippet: "Waiting...")
+            let _ = createMarker(location: fromLocation, mapView: mapView, markerTitle: "From Location", snippet: "")
+            let _ = createMarker(location: cabLocation, mapView: mapView, markerTitle: "Cab Location", snippet: "Waiting...")
             drawPath(map: mapView, pathArray: GPXFile.cherryHillPath)
         }
     }
@@ -161,7 +163,7 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         view.addSubview(mapView)
     }
     
-    private func createMarker(location : CLLocationCoordinate2D, mapView : GMSMapView, markerTitle : String, snippet : String, image : UIImage? = nil, markerName : String? = nil) {
+    private func createMarker(location : CLLocationCoordinate2D, mapView : GMSMapView, markerTitle : String, snippet : String, image : UIImage? = nil, markerName : String? = nil) -> GMSMarker {
         let marker = GMSMarker(position: location)
         marker.title =  markerTitle
         marker.snippet = snippet
@@ -173,6 +175,7 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
             marker.userData = markerName
         }
         marker.map = mapView
+        return marker
     }
     
     private func removeMarker(marker : GMSMarker) {
@@ -239,7 +242,9 @@ extension MapViewController : GMSMapViewDelegate {
     
     func mapView(_ mapView: GMSMapView, didLongPressAt coordinate: CLLocationCoordinate2D) {
         
-        createMarker(location: coordinate, mapView: self.mapView, markerTitle: "Destination", snippet: "", image: UIImage(named: "drop-pin"))
+        self.dropLocationMarker?.map = nil
+        self.dropLocationMarker =  createMarker(location: coordinate, mapView: self.mapView, markerTitle: "Destination", snippet: "", image: UIImage(named: "drop-pin"))
+        
         reachabilityCheck()
         guard let appDelegate = UIApplication.shared.delegate  as? AppDelegate else { return }
         
@@ -297,24 +302,23 @@ extension MapViewController : GMSMapViewDelegate {
         if let url = URL(string: directionsUrlString) {
             
             let fetchDirection = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
-                
-                if error == nil && data != nil {
-                    var polyline : GMSPolyline?
-                    if let dictionary = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments ) as? [String : Any] {
-                        if let routesArray = dictionary?["routes"] as? [Any], !routesArray.isEmpty {
-                            if let routeDict = routesArray.first as? [String : Any] , !routeDict.isEmpty {
-                                if let routeOverviewPolyline = routeDict["overview_polyline"] as? [String : Any] , !routeOverviewPolyline.isEmpty {
-                                    if let points = routeOverviewPolyline["points"] as? String {
-                                        if let path = GMSPath(fromEncodedPath: points) {
-                                            polyline = GMSPolyline(path: path)
+                DispatchQueue.main.async {
+                    if error == nil && data != nil {
+                        var polyline : GMSPolyline?
+                        if let dictionary = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments ) as? [String : Any] {
+                            if let routesArray = dictionary?["routes"] as? [Any], !routesArray.isEmpty {
+                                if let routeDict = routesArray.first as? [String : Any] , !routeDict.isEmpty {
+                                    if let routeOverviewPolyline = routeDict["overview_polyline"] as? [String : Any] , !routeOverviewPolyline.isEmpty {
+                                        if let points = routeOverviewPolyline["points"] as? String {
+                                            if let path = GMSPath(fromEncodedPath: points) {
+                                                polyline = GMSPolyline(path: path)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    
-                    DispatchQueue.main.async {
+                        
                         if let polyline = polyline { completionHandler?(polyline) }
                     }
                 }
@@ -322,4 +326,6 @@ extension MapViewController : GMSMapViewDelegate {
             fetchDirection.resume()
         }
     }
+    
 }
+
