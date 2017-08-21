@@ -10,7 +10,6 @@ import UIKit
 import SceneKit
 import ARKit
 import Vision
-import CoreML
 
 /* AR contains   1. Tracking ( World Tracking - ARAnchor )
                  2. Scene Understanding [a. Plane detection (ARPlaneAnchor) b. Hit Testing (placing object)  c. Light Estimation ]
@@ -35,6 +34,7 @@ class ARViewController: UIViewController {
     
     private var isNewPlaneDetected : Bool = false
     private var nodeName : String = "New Node"
+    private var timer : Timer?
     
     //MARK:- View Controller Lifecycle
     
@@ -62,11 +62,13 @@ class ARViewController: UIViewController {
         sceneView.scene = getScene() // SceneNodeCreator.sceneSetUp()
         sceneView.autoenablesDefaultLighting = true
         sceneView.allowsCameraControl = false
+        addTimer()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         sceneView.session.pause()
+        timer?.invalidate()
     }
     
     //MARK:- Dismiss
@@ -173,16 +175,27 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
         if !isNewPlaneDetected {
             //doHitTesting(frame: frame)
         }
-        //detectCapturedImage(image: frame.capturedImage)
     }
    
+    private func addTimer() {
+        timer = Timer.scheduledTimer(timeInterval: 3.0, target: self, selector: #selector(self.performAction), userInfo: nil, repeats: true)
+        timer?.tolerance = 1.0
+    }
+    
+    @objc private func performAction() {
+        if let image = self.sceneView.session.currentFrame?.capturedImage {
+            self.detectCapturedImage(image: image)
+        }
+    }
+    
     //MARK:- Detect Captured Image
     
-    /*
-     
     private func detectCapturedImage( image : CVPixelBuffer ) {
         if let image = convertImage(input: image) {
-            recognizeUsingVision(input: image)
+            DispatchQueue.main.async { [weak self] in
+                let classVal = ImageClassification.classify(image: image)
+                self?.title = classVal == .CAR ? "CAR present" : "Finding CAR"
+            }
         }
     }
     
@@ -195,6 +208,7 @@ extension ARViewController : ARSCNViewDelegate , ARSessionDelegate {
         return nil
     }
      
+ /*
     private func recognizeUsingVision(input : UIImage ) {
         let coreMLmodel = Resnet50()
         let model = try? VNCoreMLModel(for:coreMLmodel.model)
@@ -277,10 +291,12 @@ extension ARViewController {
     }
     
     func sessionWasInterrupted(_ session: ARSession) {
+        print("sessionWasInterrupted")
         addOverlay()
     }
     
     func sessionInterruptionEnded(_ session: ARSession) {
+        print("sessionInterruptionEnded")
         removeOverlay()
     }
     
