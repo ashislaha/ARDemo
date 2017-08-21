@@ -331,10 +331,8 @@ extension ARViewController {
                 if let referencePoint = firstSection.first {
                     let carRealCoordinate = calculateRealCoordinate(mapCoordinate: carLocation, referencePoint: referencePoint)
                     let position = SCNVector3Make(carRealCoordinate.0, carRealCoordinate.1, carRealCoordinate.2)
-                    //let node = SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  position)
-                    //let node = SceneNodeCreator.createNodeWithImage(image:  UIImage(named: "ola_logo")!, position: position, width: 10, height: 10)
-                    let node = SceneNodeCreator.getGeometryNode(type: .Capsule, position: position,text: "Destination")
-                    node.scale = SCNVector3Make(5, 5, 5)
+                    let node = SceneNodeCreator.createNodeWithImage(image: UIImage(named: "destination")!, position: position, width: 10, height: 10)
+                    node.scale = SCNVector3Make(1, 1, 1)
                     scene.rootNode.addChildNode(node)
                 }
             }

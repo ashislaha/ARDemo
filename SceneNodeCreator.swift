@@ -219,8 +219,6 @@ class SceneNodeCreator {
         scene.rootNode.addChildNode(SceneNodeCreator.createSceneNode(sceneName: "art.scnassets/ship.scn", position:  SCNVector3Make(1, 0, -1)))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Cone, position: SCNVector3Make(2, 0, -1),text: "Hi"))
         scene.rootNode.addChildNode(SceneNodeCreator.getGeometryNode(type: .Pyramid, position: SCNVector3Make(3, 0, -1),text: "Hi"))
-        //scene.rootNode.addChildNode(SceneNodeCreator.createNodeWithImage(image: UIImage(named: "ola_logo")!, position: SCNVector3Make(0, 1, -20)))
-        //scene.rootNode.addChildNode(SceneNodeCreator.drawPath(position1: SCNVector3Make(0, 0, 0), position2: SCNVector3Make(4, 0, -3)))
         return scene
     }
 }

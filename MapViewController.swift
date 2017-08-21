@@ -74,7 +74,8 @@ class MapViewController: UIViewController , UIGestureRecognizerDelegate {
         
         if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
             appDelegate.locationManager.startUpdatingLocation()
-            appDelegate.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            appDelegate.locationManager.distanceFilter = kCLDistanceFilterNone
+            appDelegate.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         } else {
             appDelegate.locationManager.requestWhenInUseAuthorization()
         }
