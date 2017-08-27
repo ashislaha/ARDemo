@@ -18,4 +18,5 @@ in "ARViewController"
                 https://github.com/ashislaha/CarDetection-iOS for more details how to train a model.
                 
 -- In ARFrame generates capturedImage which is the input to .mlmodel for detecting that car is present in the image or not.
+
 -- This project combines both ARKit & ML.
