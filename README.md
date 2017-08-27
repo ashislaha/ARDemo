@@ -19,4 +19,4 @@ in "ARViewController"
                 
 -- In ARFrame generates capturedImage which is the input to .mlmodel for detecting that car is present in the image or not.
 
--- This project combines both ARKit & ML.
+-- This project combines both ARKit & CoreML.
