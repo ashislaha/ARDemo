@@ -55,7 +55,7 @@ class SceneNodeCreator {
         let dz = (-1.0) * (position2.z - position1.z)
         var theta = atan(Double(dz/dx))
         if theta == .nan {
-            theta = Double.pi / 2
+            theta = 3.14159265358979 / 2 // 90 Degree
         }
         print("Angle between point1 and point2 is : \(theta * 180 / Double.pi) along Y-Axis")
         
@@ -84,21 +84,36 @@ class SceneNodeCreator {
     
     class func drawArrow(position1 : SCNVector3, position2 : SCNVector3 ) -> SCNNode {
         
+        let angle = getAngle(position1: position1, position2: position2)
+        // create node
+        let midPosition = SCNVector3Make((position1.x+position2.x)/2, 1.0, (position1.z+position2.z)/2)
+        print("Draw Arrow at \(midPosition)")
+        let arrowNode = SceneNodeCreator.createNodeWithImage(image: UIImage(named: "arrow")!, position: midPosition, width: 2, height: 2)
+        arrowNode.rotation = SCNVector4Make(0, 1, 0, Float(angle))
+        
+        return arrowNode
+    }
+    
+    class func getAngle(position1 : SCNVector3, position2 : SCNVector3) -> Double {
         // calculate Angle
         let dx = position2.x - position1.x
         let dz = (-1.0) * (position2.z - position1.z)
         var theta = atan(Double(dz/dx))
         if theta == .nan {
-            theta = Double.pi / 2
+            theta = 3.14159265358979 / 2  // 90 Degree
         }
+        return theta
+    }
+    
+    class func drawBanner(position1 : SCNVector3, position2 : SCNVector3) -> [SCNNode] { // it gives at the begining & mid-point for advertisement
         
-        // create node
-        let midPosition = SCNVector3Make((position1.x+position2.x)/2, 1.0, (position1.z+position2.z)/2)
-        print("Draw Arrow at \(midPosition)")
-        let arrowNode = SceneNodeCreator.createNodeWithImage(image: UIImage(named: "arrow")!, position: midPosition, width: 2, height: 2)
-        arrowNode.rotation = SCNVector4Make(0, 1, 0, Float(theta))
-        
-        return arrowNode
+        let delta : Float = 5.0
+        let startPosition = SCNVector3Make(position1.x + delta, 1.0, position1.z + delta)
+        let midPosition = SCNVector3Make((position1.x+position2.x)/2 + delta, 1.0, (position1.z+position2.z)/2 + delta) // adding to x or Z should be based on angle
+        print("Advertisement drawn at begin : \(startPosition) and mid : \(midPosition)")
+        let bannerBegin = SceneNodeCreator.createNodeWithImage(image: UIImage(named: "advertisement")!, position: startPosition, width: 7, height: 7)
+        let bannerMid = SceneNodeCreator.createNodeWithImage(image: UIImage(named: "advertisement")!, position: midPosition, width: 7, height: 7)
+        return [bannerBegin,bannerMid]
     }
     
     class func createNodeWithImage(image : UIImage, position : SCNVector3 , width : CGFloat, height : CGFloat ) -> SCNNode {

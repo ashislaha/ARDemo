@@ -337,6 +337,14 @@ extension ARViewController {
                     let arrowPosition = SCNVector3Make(eachCoordinate.0, eachCoordinate.1, eachCoordinate.2)
                     scene.rootNode.addChildNode(SceneNodeCreator.drawArrow(position1: lastPosition, position2: arrowPosition))
                     scene.rootNode.addChildNode(SceneNodeCreator.drawPath(position1: lastPosition, position2: arrowPosition))
+                    
+                    // add advertisement/banner at begining & mid point except at the begining
+                    if !samePosition(position1: lastPosition, position2: SCNVector3Zero) && !samePosition(position1: arrowPosition, position2: SCNVector3Zero) {
+                        let bannerNodes = SceneNodeCreator.drawBanner(position1: lastPosition, position2: arrowPosition)
+                        for node in bannerNodes {
+                            scene.rootNode.addChildNode(node)
+                        }
+                    }
                     nodeNumber = nodeNumber + 1
                     lastPosition = arrowPosition
                 }
@@ -354,6 +362,10 @@ extension ARViewController {
             }
         }
         return scene
+    }
+    
+    private func samePosition(position1 : SCNVector3, position2 : SCNVector3) -> Bool {
+        return position1.x == position2.x && position1.y == position2.y && position1.z == position2.z
     }
     
     private func getDirection(fromPoint : SCNVector3, toPoint : SCNVector3 ) -> ArrowDirection { // based on 2 consecutive points
