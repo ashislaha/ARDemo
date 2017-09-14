@@ -338,13 +338,16 @@ extension ARViewController {
                     scene.rootNode.addChildNode(SceneNodeCreator.drawArrow(position1: lastPosition, position2: arrowPosition))
                     scene.rootNode.addChildNode(SceneNodeCreator.drawPath(position1: lastPosition, position2: arrowPosition))
                     
-                    // add advertisement/banner at begining & mid point except at the begining
-                    if !samePosition(position1: lastPosition, position2: SCNVector3Zero) && !samePosition(position1: arrowPosition, position2: SCNVector3Zero) {
-                        let bannerNodes = SceneNodeCreator.drawBanner(position1: lastPosition, position2: arrowPosition)
-                        for node in bannerNodes {
-                            scene.rootNode.addChildNode(node)
-                        }
-                    }
+                    /*
+                     // add advertisement/banner at begining & mid point except at the begining
+                     if !samePosition(position1: lastPosition, position2: SCNVector3Zero) && !samePosition(position1: arrowPosition, position2: SCNVector3Zero) {
+                     
+                         let bannerNodes = SceneNodeCreator.drawBanner(position1: lastPosition, position2: arrowPosition)
+                         for node in bannerNodes {
+                              scene.rootNode.addChildNode(node)
+                         }
+                     }
+                     */
                     nodeNumber = nodeNumber + 1
                     lastPosition = arrowPosition
                 }

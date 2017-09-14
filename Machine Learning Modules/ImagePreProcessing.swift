@@ -139,14 +139,14 @@ class ImagePreProcessing {
     
     //MARK:- Normalized Image
     
-    fileprivate func normalizedIntensityMatrix(image: UIImage) -> [Double] {
+    private func normalizedIntensityMatrix(image: UIImage) -> [Double] {
         let logMatrix = logPixelOfImage(image: image)
         return create1DMatrix(inputMatrix: logMatrix)
     }
     
     //MARK:- Log Pixel image
     
-    fileprivate func logPixelOfImage(image : UIImage) -> [[Double]] {
+    private func logPixelOfImage(image : UIImage) -> [[Double]] {
         guard let coreImageRef = image.cgImage else { return [] }
         let height = coreImageRef.height
         let width = coreImageRef.width
@@ -187,7 +187,7 @@ class ImagePreProcessing {
         return pixelMatrix
     }
     
-    fileprivate func create1DMatrix(inputMatrix : [[Double]]) -> [Double] {
+    private func create1DMatrix(inputMatrix : [[Double]]) -> [Double] {
         var intensities = [Double]()
         for i in 0..<ImageProcessingConstants.optimalDimensionX {
             for j in 0..<ImageProcessingConstants.optimalDimensionY {
@@ -199,7 +199,7 @@ class ImagePreProcessing {
     
    //MARK:- Print Matrix
     
-    fileprivate func printMatrix(inputMatrix : [[Double]], height : Int = ImageProcessingConstants.optimalDimensionX, width : Int = ImageProcessingConstants.optimalDimensionY, name : String = "") {
+    private func printMatrix(inputMatrix : [[Double]], height : Int = ImageProcessingConstants.optimalDimensionX, width : Int = ImageProcessingConstants.optimalDimensionY, name : String = "") {
         
         print("\n\n *********** PRINT MATRIX : \(name) ********** \n\n")
         for i in 0..<height {
@@ -217,7 +217,7 @@ extension ImagePreProcessing {
     
     //MARK:- Canny Edge Dectection Algo.
     
-    fileprivate func cannyEdgeDetectionOperator(inputMatrix : [[Double]]) -> [[Double]] {
+    private func cannyEdgeDetectionOperator(inputMatrix : [[Double]]) -> [[Double]] {
         
         // apply gaussian filter to remove noise
         let gaussainOutput  = gaussianFilter(inputMatrix:inputMatrix)
@@ -283,7 +283,7 @@ extension ImagePreProcessing {
     
     //MARK:- Edge Detection Technique ( Sobel operator ) on optimalPixelMatrix
     
-    fileprivate func sobelOperator(inputMatrix : [[Double]]) -> [[Double]] {
+    private func sobelOperator(inputMatrix : [[Double]]) -> [[Double]] {
         
         var filteredOutput = [[Double]]()
         
@@ -331,7 +331,7 @@ extension ImagePreProcessing {
     
     //MARK:- suppression
     
-    fileprivate func suppression(inputMatrix : [[Double]], intensityThreshold : Double) -> [[Double]] {
+    private func suppression(inputMatrix : [[Double]], intensityThreshold : Double) -> [[Double]] {
         
         var results = [[Double]]()
         
@@ -362,7 +362,7 @@ extension ImagePreProcessing {
     
     //MARK:- Create Image from Pixel data
     
-    fileprivate func createImageFromRGBData(inputMatrix : [Double], width : Int, height : Int) -> UIImage {
+    private func createImageFromRGBData(inputMatrix : [Double], width : Int, height : Int) -> UIImage {
         
         var resultImage = UIImage()
         let bytesPerPixel = 4  // 4 bytes or 32 bits
